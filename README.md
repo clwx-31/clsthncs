@@ -35,8 +35,10 @@ _partials/mk.sh          head + body + foot -> page
 _partials/mkindex.py     assets/search-index.json, one record per <h2> section
 _partials/sw.js          service worker template ({{VERSION}}, {{SHELL}}, {{EXTRAS}})
 _partials/mksw.py        stamps the template into sw.js with a content-hash version
-_partials/check.py       link, anchor, asset, tag-balance and precache checks
-build.sh                 rebuilds every page, the search index, and sw.js
+_partials/check.py       links, anchors, assets, tag balance, CSS classes, accessibility
+_partials/mkmeta.py      sitemap.xml and robots.txt
+_partials/live.py        smoke-tests the published site
+build.sh                 rebuilds every page, the search index, sw.js, sitemap.xml, robots.txt
 assets/style.css         all styling (design tokens at the top, light + dark)
 assets/site.js           theme, nav, checklists, "/" search shortcut, SW registration
 assets/program-data.js   the 24-week program and all eleven ladders, as data
@@ -57,11 +59,24 @@ npm run verify       # build + static checks + behavior tests
 - **`_partials/check.py`** — internal links, anchors, asset paths, tag balance,
   skip-link targets, and the service worker precache list. No dependencies.
 - **`_partials/test.js`** — serves the repo on an ephemeral port, loads every
-  page in jsdom, and asserts that nothing throws and that the nutrition
-  calculator, body-fat estimator, tracker (weights, rolling average, chart,
-  personal bests, baseline-test deltas, deletion, persistence) and search all
-  produce correct output. Run this after any restyle: it catches markup changes
-  that silently break the scripts.
+  page in jsdom, and asserts that nothing throws plus ~130 specific behaviors:
+  the nutrition calculator and body-fat estimator, the tracker (weights,
+  rolling average, chart geometry, personal bests, weekly review, baseline-test
+  deltas, deletion, backup round-trip), the session runner (week and phase
+  derivation, volume ramp, deloads, RIR capture, session rotation, what gets
+  logged), the rung finder, the printable cards, and search. Run this after any
+  restyle: it catches markup changes that silently break the scripts.
+
+After publishing, smoke-test what actually went out:
+
+```sh
+npm run live        # or: python3 _partials/live.py <base-url>
+```
+
+That checks every URL in the sitemap for a 200 and the right content type,
+confirms the service worker's precache list resolves (one 404 in it aborts the
+install and leaves users with no offline copy), and that the search index
+parses.
 
 Edit a body file (or the header, footer, or stylesheet), then:
 
