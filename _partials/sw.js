@@ -5,14 +5,29 @@
 
 var VERSION = '{{VERSION}}';
 var CACHE = 'calisthenics-' + VERSION;
-var ASSETS = [
-{{ASSETS}}
+/* Required: the site is broken offline without these. If any one fails to
+   fetch, install fails and the old cache is kept — which is the right outcome. */
+var SHELL = [
+{{SHELL}}
+];
+
+/* Best effort: images and other heavy extras. Cached opportunistically so one
+   missing file can never break the install. They are also cached on first view
+   by the fetch handler below. */
+var EXTRAS = [
+{{EXTRAS}}
 ];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(
     caches.open(CACHE)
-      .then(function (c) { return c.addAll(ASSETS); })
+      .then(function (c) {
+        return c.addAll(SHELL).then(function () {
+          return Promise.all(EXTRAS.map(function (u) {
+            return c.add(u).catch(function () { /* non-fatal */ });
+          }));
+        });
+      })
       .then(function () { return self.skipWaiting(); })
   );
 });

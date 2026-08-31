@@ -3,9 +3,11 @@
    Source template: _partials/sw.js  ·  Version is a content hash, so a rebuild
    invalidates the old cache automatically. */
 
-var VERSION = '2689b59e7459';
+var VERSION = '8b38551274e2';
 var CACHE = 'calisthenics-' + VERSION;
-var ASSETS = [
+/* Required: the site is broken offline without these. If any one fails to
+   fetch, install fails and the old cache is kept — which is the right outcome. */
+var SHELL = [
   'exercises.html',
   'faq.html',
   'fundamentals.html',
@@ -15,12 +17,26 @@ var ASSETS = [
   'nutrition.html',
   'program.html',
   'recovery.html',
+  'references.html',
   'search.html',
   'tracker.html',
   'assets/style.css',
   'assets/site.js',
-  'assets/search-index.json',
+  'assets/search-index.json'
+];
+
+/* Best effort: images and other heavy extras. Cached opportunistically so one
+   missing file can never break the install. They are also cached on first view
+   by the fetch handler below. */
+var EXTRAS = [
   'assets/images/discipline-hero.jpg',
+  'assets/images/discipline-hero.webp',
+  'assets/images/workout-build-legs.webp',
+  'assets/images/workout-build-pull.webp',
+  'assets/images/workout-build-push.webp',
+  'assets/images/workout-foundation-legs.webp',
+  'assets/images/workout-foundation-pull.webp',
+  'assets/images/workout-foundation-push.webp',
   'assets/images/workout-onramp-legs.webp',
   'assets/images/workout-onramp-pull.webp',
   'assets/images/workout-onramp-push.webp'
@@ -29,7 +45,13 @@ var ASSETS = [
 self.addEventListener('install', function (e) {
   e.waitUntil(
     caches.open(CACHE)
-      .then(function (c) { return c.addAll(ASSETS); })
+      .then(function (c) {
+        return c.addAll(SHELL).then(function () {
+          return Promise.all(EXTRAS.map(function (u) {
+            return c.add(u).catch(function () { /* non-fatal */ });
+          }));
+        });
+      })
       .then(function () { return self.skipWaiting(); })
   );
 });

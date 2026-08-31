@@ -1,26 +1,35 @@
 #!/usr/bin/env python3
-"""Generate sw.js from _partials/sw.js with a content-hash version and asset list.
+"""Generate sw.js from _partials/sw.js.
 
-Everything the site needs offline goes in the precache list. The version is a
-hash of that content, so any rebuild retires the previous cache automatically.
+SHELL is everything the site needs to function offline and must all fetch
+successfully or the install is abandoned. EXTRAS is cached best-effort, so a
+single missing image can never break offline support. The cache name is a hash
+of both lists, so any rebuild retires the previous cache automatically.
 """
 import glob
 import hashlib
 import os
 
-files = sorted(glob.glob("*.html"))
-files += ["assets/style.css", "assets/site.js", "assets/search-index.json"]
-files += sorted(glob.glob("assets/images/*"))
-files += sorted(glob.glob("assets/*.woff2"))
-files = [f for f in files if os.path.isfile(f)]
+shell = sorted(glob.glob("*.html"))
+shell += ["assets/style.css", "assets/site.js", "assets/search-index.json"]
+shell = [f for f in shell if os.path.isfile(f)]
+
+extras = sorted(glob.glob("assets/images/*")) + sorted(glob.glob("assets/*.woff2"))
+extras = [f for f in extras if os.path.isfile(f)]
 
 digest = hashlib.sha256()
-for f in files:
+for f in shell + extras:
     digest.update(open(f, "rb").read())
 version = digest.hexdigest()[:12]
 
-template = open("_partials/sw.js", encoding="utf-8").read()
-assets = ",\n".join("  '%s'" % f for f in files)
-out = template.replace("{{VERSION}}", version).replace("{{ASSETS}}", assets)
+
+def as_list(paths):
+    return ",\n".join("  '%s'" % p for p in paths)
+
+
+out = (open("_partials/sw.js", encoding="utf-8").read()
+       .replace("{{VERSION}}", version)
+       .replace("{{SHELL}}", as_list(shell))
+       .replace("{{EXTRAS}}", as_list(extras)))
 open("sw.js", "w", encoding="utf-8").write(out)
-print("built sw.js (version %s, %d cached files)" % (version, len(files)))
+print("built sw.js (version %s, %d shell + %d extras)" % (version, len(shell), len(extras)))
