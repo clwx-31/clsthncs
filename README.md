@@ -18,6 +18,9 @@ training three days a week starting with no equipment. All units are US customar
 | `tracker.html` | Browser-local logger: body metrics with a rolling-average chart, workout log with personal bests, baseline-test comparison, JSON/CSV export and import |
 | `faq.html` | ~25 FAQs, 15 myths, and a symptom → cause → fix troubleshooting table |
 | `references.html` | Sources for the site's claims, what the evidence does *not* settle, and how the guidance changes by sex, age, and starting point |
+| `rungs.html` | Eleven questions that set your starting rung on every ladder, saved to `cal-rungs` |
+| `today.html` | Session runner: derives your week, picks the next session, shows rungs and last time's numbers, times rests, logs into `cal-workouts` |
+| `cards.html` | Printable session cards and a 24-week wall calendar, generated from the program data and your saved rungs |
 | `search.html` | Client-side search across every section, backed by a build-time index. `/` from any page opens it |
 
 ## Structure
@@ -36,6 +39,7 @@ _partials/check.py       link, anchor, asset, tag-balance and precache checks
 build.sh                 rebuilds every page, the search index, and sw.js
 assets/style.css         all styling (design tokens at the top, light + dark)
 assets/site.js           theme, nav, checklists, "/" search shortcut, SW registration
+assets/program-data.js   the 24-week program and all eleven ladders, as data
 assets/images/           photography and session illustrations
 .nojekyll                tells GitHub Pages to serve the files as-is
 ```
