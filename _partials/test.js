@@ -293,13 +293,13 @@ async function load(page) {
     check('skill row flagged', d.querySelectorAll('.ex-row.skill-row').length === 1);
     // week 1 ramps: a base-4 exercise should show 2 sets
     const pushRow = [...rows].find(r => /push-up/i.test(r.querySelector('.ex-name').textContent));
-    check('week 1 ramps sets down to 2', pushRow.querySelectorAll('input[type=number]').length === 2,
-          String(pushRow.querySelectorAll('input[type=number]').length));
+    check('week 1 ramps sets down to 2', pushRow.querySelectorAll('input[data-j]').length === 2,
+          String(pushRow.querySelectorAll('input[data-j]').length));
 
     // enter a set -> row marked done + persisted + timer starts
-    const inputs = pushRow.querySelectorAll('input[type=number]');
+    const inputs = pushRow.querySelectorAll('input[data-j]');
     inputs.forEach(i => { i.value = '8'; i.dispatchEvent(new w.Event('change', { bubbles: true })); });
-    check('row marked complete', pushRow.classList.contains('done'));
+    check('row marked complete without needing RIR', pushRow.classList.contains('done'));
     check('entries persisted', JSON.stringify(JSON.parse(w.localStorage.getItem('cal-session'))).includes('8'));
     check('rest timer running', /^\d+:\d\d$/.test(d.getElementById('t-num').textContent),
           d.getElementById('t-num').textContent);
@@ -312,6 +312,18 @@ async function load(page) {
     check('rung saved', JSON.parse(w.localStorage.getItem('cal-rungs')).push === 2,
           String(JSON.parse(w.localStorage.getItem('cal-rungs')).push));
 
+    // RIR and session context are captured
+    const rirBox = pushRow.querySelector('[data-rir]');
+    check('every working set row has an RIR box', !!rirBox);
+    check('skill rows have no RIR box', !d.querySelector('.ex-row.skill-row [data-rir]'));
+    rirBox.value = '2'; rirBox.dispatchEvent(new w.Event('change', { bubbles: true }));
+    check('RIR persisted', JSON.parse(w.localStorage.getItem('cal-session-rir'))[Object.keys(JSON.parse(w.localStorage.getItem('cal-session-rir')))[0]] === '2');
+
+    const felt = d.getElementById('c-felt'); felt.value = 'flat'; felt.dispatchEvent(new w.Event('change', { bubbles: true }));
+    const sleep = d.getElementById('c-sleep'); sleep.value = '6'; sleep.dispatchEvent(new w.Event('input', { bubbles: true }));
+    const cnote = d.getElementById('c-note'); cnote.value = 'left elbow twinged'; cnote.dispatchEvent(new w.Event('input', { bubbles: true }));
+    check('session context persisted', JSON.parse(w.localStorage.getItem('cal-session-ctx')).felt === 'flat');
+
     // finish writes into the shared workout log
     const p2 = d.querySelector('.ex-row:nth-child(2) input[type=number]');
     if (p2) { p2.value = '10'; p2.dispatchEvent(new w.Event('change', { bubbles: true })); }
@@ -321,6 +333,10 @@ async function load(page) {
     check('entries carry a ladder key', logged.every(e => !!e.key));
     check('entries carry numeric sets', logged.every(e => e.sets.every(n => typeof n === 'number')));
     check('session label recorded', /^A · /.test(logged[0].session), logged[0].session);
+    check('RIR carried into the log', logged.some(e => e.rir === '2'), JSON.stringify(logged.map(e => e.rir)));
+    check('session context carried into the log', /felt flat · 6 h sleep · left elbow twinged/.test(logged[0].note),
+          logged[0].note);
+    check('context cleared after logging', !JSON.parse(w.localStorage.getItem('cal-session-ctx')).felt);
     check('advances to session B', d.getElementById('s-sess').textContent.trim() === 'B',
           d.getElementById('s-sess').textContent);
     check('entered numbers cleared', Object.keys(JSON.parse(w.localStorage.getItem('cal-session'))).length === 0);

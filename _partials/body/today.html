@@ -23,6 +23,9 @@
   .seg button { border: none; background: var(--bg); color: var(--text-muted); padding: .35rem .75rem; font: inherit; font-size: .88rem; cursor: pointer; }
   .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; font-weight: 650; }
   /* Keeps the document outline intact (h1 → h2) without the visual weight of a section heading. */
+  .rir-box { display: inline-flex; align-items: center; gap: .3rem; margin-left: .5rem; }
+  .rir-box label { font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin: 0; font-weight: 700; }
+  .rir-box input { width: 3.2rem; text-align: center; padding: .4rem .3rem; }
   .card-h { font-size: .95rem; font-weight: 700; letter-spacing: 0; text-transform: none; margin: 0 0 .5rem; border: none; padding: 0; }
 </style>
 
@@ -69,6 +72,23 @@
 <h2 id="session">The session</h2>
 <div id="list"></div>
 
+<div class="card" id="ctx-card">
+  <h2 class="card-h">How did it go?</h2>
+  <p style="font-size:.87rem;color:var(--text-muted);margin:0 0 .8rem">Optional, and worth thirty seconds. When progress stalls in six weeks, these are the fields that tell you whether it was sleep, stress, or programming — and you can&#39;t reconstruct them later.</p>
+  <div class="field-row">
+    <div class="field"><label for="c-felt">Session felt</label>
+      <select id="c-felt">
+        <option value="">—</option>
+        <option value="strong">Strong — beat last time comfortably</option>
+        <option value="normal">Normal</option>
+        <option value="flat">Flat — everything was heavy</option>
+      </select>
+    </div>
+    <div class="field"><label for="c-sleep">Sleep last night (hours)</label><input id="c-sleep" type="number" min="0" max="14" step="0.5" placeholder="8"></div>
+    <div class="field"><label for="c-note">Anything worth remembering</label><input id="c-note" placeholder="left elbow twinged on set 3"></div>
+  </div>
+</div>
+
 <div class="btn-row" style="margin-top:1.5rem">
   <button class="btn" type="button" id="btn-finish">Finish &amp; log session</button>
   <button class="btn ghost" type="button" id="btn-clear">Clear entered numbers</button>
@@ -94,7 +114,7 @@
 <div class="table-wrap"><table id="rung-table"></table></div>
 
 <div class="timer-bar" id="timerbar">
-  <span class="timer-num" id="t-num">--:--</span>
+  <span class="timer-num" id="t-num" role="timer" aria-live="off">--:--</span>
   <span class="btn-row" style="margin:0">
     <button class="btn ghost mini" type="button" data-t="60">1:00</button>
     <button class="btn ghost mini" type="button" data-t="90">1:30</button>
@@ -119,7 +139,9 @@
 
   var plan = load('cal-plan', {});
   var rungs = Object.assign(C.defaultRungs(), load('cal-rungs', {}));
-  var entered = load('cal-session', {});   // { exerciseIndex: [reps,...] }
+  var entered = load('cal-session', {});     // { exerciseIndex: [reps,...] }
+  var rirs = load('cal-session-rir', {});    // { exerciseIndex: repsInReserve }
+  var ctx = load('cal-session-ctx', {});     // { felt, sleep, note }
   var picked = null;
 
   /* ---------- week / session ---------- */
@@ -188,10 +210,16 @@
   function startTimer(sec) {
     stopTimer();
     timer.left = sec; paintTimer();
+    $('t-num').setAttribute('aria-live', 'off');
     $('t-hint').textContent = 'Resting. The next set starts when this hits zero.';
     timer.id = setInterval(function () {
       timer.left--;
-      if (timer.left <= 0) { timer.left = 0; paintTimer(); stopTimer(true); beep(); $('t-hint').textContent = 'Rest is up — next set.'; return; }
+      if (timer.left <= 0) {
+        timer.left = 0; paintTimer(); stopTimer(true); beep();
+        $('t-num').setAttribute('aria-live', 'assertive');
+        $('t-hint').textContent = 'Rest is up — next set.';
+        return;
+      }
       paintTimer();
     }, 1000);
   }
@@ -252,7 +280,7 @@
           ' placeholder="' + it.min + '">';
       }
 
-      var done = vals.filter(function (x) { return x !== '' && x != null; }).length >= sets && sets > 0;
+      var done = sets > 0 && vals.filter(function (x) { return x !== '' && x != null; }).length >= sets;
 
       return '<div class="ex-row' + (it.skill ? ' skill-row' : '') + (done ? ' done' : '') + '">' +
         '<div class="ex-head">' +
@@ -262,7 +290,13 @@
           (prev ? '<span class="ex-prev">last time: ' + prev.sets.join(' / ') + ' <span style="opacity:.7">(' + esc(prev.d) + ')</span></span>' : '<span class="ex-prev">no history yet</span>') +
         '</div>' +
         (it.note ? '<p style="font-size:.85rem;color:var(--text-muted);margin:0 0 .5rem">' + esc(it.note) + '</p>' : '') +
-        '<div class="set-inputs">' + inputs + '<span class="u">' + esc(unit) + '</span></div>' +
+        '<div class="set-inputs">' + inputs + '<span class="u">' + esc(unit) + '</span>' +
+          (it.skill ? '' :
+            '<span class="rir-box"><label for="rir-' + i + '">RIR</label>' +
+            '<input id="rir-' + i + '" type="number" min="0" max="6" data-rir="' + i + '"' +
+            ' value="' + esc(rirs[i] != null ? rirs[i] : '') + '" placeholder="2"' +
+            ' title="Reps you had left in the tank on your last set"></span>') +
+        '</div>' +
         (ladder ? '<div class="rung-line">' +
             '<button class="btn ghost mini" type="button" data-rung="' + it.k + '" data-dir="-1">↓ easier</button>' +
             '<button class="btn ghost mini" type="button" data-rung="' + it.k + '" data-dir="1">harder ↑</button>' +
@@ -279,6 +313,12 @@
     $('list').querySelectorAll('input[type="number"]').forEach(function (inp) {
       inp.addEventListener('change', onSetEntry);
       inp.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { onSetEntry.call(inp); inp.blur(); } });
+    });
+    $('list').querySelectorAll('[data-rir]').forEach(function (inp) {
+      inp.addEventListener('change', function () {
+        rirs[+inp.getAttribute('data-rir')] = inp.value;
+        save('cal-session-rir', rirs);
+      });
     });
     $('list').querySelectorAll('[data-rung]').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -300,10 +340,11 @@
     if (this.value !== '' && rest) startTimer(rest);
     var row = this.closest('.ex-row');
     if (row) {
-      var inputs = row.querySelectorAll('input[type="number"]');
+      // Set inputs carry data-j; the RIR box must not count toward completion.
+      var inputs = row.querySelectorAll('input[data-j]');
       var filled = 0;
       inputs.forEach(function (x) { if (x.value !== '') filled++; });
-      row.classList.toggle('done', filled === inputs.length);
+      row.classList.toggle('done', inputs.length > 0 && filled === inputs.length);
     }
   }
 
@@ -330,6 +371,15 @@
 
   /* ---------- finish ---------- */
 
+  function sessionNote() {
+    var bits = [];
+    if (ctx.felt) bits.push('felt ' + ctx.felt);
+    if (ctx.sleep) bits.push(ctx.sleep + ' h sleep');
+    if (ctx.note) bits.push(ctx.note);
+    return bits.join(' · ');
+  }
+
+
   function finish() {
     var week = currentWeek();
     if (!week) { $('finish-note').textContent = 'Set your start date first.'; return; }
@@ -346,7 +396,8 @@
         d: today(), session: letter + ' · ' + s.title, key: it.k,
         ex: C.label(it.k, rungs), rung: 'week ' + week + (it.skill ? ' · skill' : ''),
         sets: vals, unit: C.unit(it.k).indexOf('sec') === 0 ? 'sec' : 'reps',
-        rir: '', note: ''
+        rir: rirs[i] != null ? rirs[i] : '',
+        note: sessionNote()
       });
       written++;
     });
@@ -354,6 +405,9 @@
     if (!written) { $('finish-note').textContent = 'Nothing entered yet — fill in at least one set.'; return; }
     save('cal-workouts', out);
     entered = {}; save('cal-session', entered);
+    rirs = {}; save('cal-session-rir', rirs);
+    ctx = {}; save('cal-session-ctx', ctx);
+    $('c-felt').value = ''; $('c-sleep').value = ''; $('c-note').value = '';
     plan.lastSession = letter; save('cal-plan', plan);
     prevCache = null;
     stopTimer();
@@ -403,9 +457,19 @@
       picked = null; render();
     });
 
+    if (ctx.felt) $('c-felt').value = ctx.felt;
+    if (ctx.sleep) $('c-sleep').value = ctx.sleep;
+    if (ctx.note) $('c-note').value = ctx.note;
+    [['c-felt', 'felt'], ['c-sleep', 'sleep'], ['c-note', 'note']].forEach(function (pair) {
+      $(pair[0]).addEventListener('change', function () { ctx[pair[1]] = this.value; save('cal-session-ctx', ctx); });
+      $(pair[0]).addEventListener('input', function () { ctx[pair[1]] = this.value; save('cal-session-ctx', ctx); });
+    });
+
     $('btn-finish').addEventListener('click', finish);
     $('btn-clear').addEventListener('click', function () {
-      entered = {}; save('cal-session', entered); stopTimer(); render();
+      entered = {}; save('cal-session', entered);
+      rirs = {}; save('cal-session-rir', rirs);
+      stopTimer(); render();
       $('finish-note').textContent = '';
     });
 
