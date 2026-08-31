@@ -1,6 +1,6 @@
-# Calisthenics Start
+# CLSTHNCS
 
-A static, no-build beginner calisthenics site, written for a 5'9", 150 lb lifter
+A static, no-build beginner calisthenics field guide, written for a 5'9", 150 lb lifter
 training three days a week starting with no equipment. All units are US customary.
 
 ## Pages
