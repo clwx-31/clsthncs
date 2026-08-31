@@ -3,38 +3,73 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Start Here · Calisthenics Start</title>
+<meta name="theme-color" content="#f4f4f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+<title>Start Here · CLSTHNCS</title>
 <meta name="description" content="A complete beginner's guide to calisthenics, built for a 5'9" 150 lb lifter training three days a week with no equipment.">
 <link rel="stylesheet" href="assets/style.css">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230a0a0a'/%3E%3Cpath d='M69 31c-5-6-11-9-19-9-16 0-28 12-28 28s12 28 28 28c8 0 15-3 20-9l-9-9c-3 3-6 5-11 5-8 0-14-6-14-15s6-15 14-15c4 0 8 2 11 5z' fill='white'/%3E%3C/svg%3E">
 <script src="assets/site.js"></script>
 </head>
 <body>
+<a class="skip-link" href="#content">Skip to content</a>
+<div class="scroll-progress" aria-hidden="true"><span></span></div>
 <header class="site-header">
   <div class="header-inner">
-    <a class="brand" href="index.html">Calisthenics<span>Start</span></a>
-    <nav class="main">
-      <a href="index.html">Start</a>
-      <a href="fundamentals.html">Fundamentals</a>
-      <a href="exercises.html">Exercises</a>
-      <a href="program.html">Program</a>
-      <a href="goals.html">Goals</a>
-      <a href="nutrition.html">Nutrition</a>
-      <a href="recovery.html">Recovery</a>
-      <a href="gear.html">Gear</a>
-      <a href="tracker.html">Tracker</a>
-      <a href="faq.html">FAQ</a>
+    <a class="brand" href="index.html" aria-label="CLSTHNCS home">
+      <span class="brand-mark">C</span>
+      <span class="brand-name">CLSTHNCS</span>
+      <span class="brand-edition">Beginner / 001</span>
+    </a>
+    <div class="header-actions">
+      <a class="header-start" href="program.html">Start training <span aria-hidden="true">↗</span></a>
+      <button class="theme-toggle" type="button" aria-label="Switch color theme"><span aria-hidden="true">◐</span><span class="theme-label">Theme</span></button>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation">
+        <span class="menu-label">Menu</span><span class="menu-icon" aria-hidden="true"></span>
+      </button>
+    </div>
+    <nav class="main" id="site-navigation" aria-label="Primary navigation">
+      <a href="index.html"><span>01</span>Start</a>
+      <a href="fundamentals.html"><span>02</span>Fundamentals</a>
+      <a href="exercises.html"><span>03</span>Exercises</a>
+      <a href="program.html"><span>04</span>Program</a>
+      <a href="goals.html"><span>05</span>Goals</a>
+      <a href="nutrition.html"><span>06</span>Nutrition</a>
+      <a href="recovery.html"><span>07</span>Recovery</a>
+      <a href="gear.html"><span>08</span>Gear</a>
+      <a href="tracker.html"><span>09</span>Tracker</a>
+      <a href="faq.html"><span>10</span>FAQ</a>
+      <a href="search.html"><span>11</span>Search</a>
     </nav>
-    <button class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
   </div>
 </header>
-<main>
+<main class="home wide" id="content">
 
-<div class="hero">
-  <p class="eyebrow">Start here</p>
-  <h1>Everything a beginner needs to start calisthenics — built around your numbers.</h1>
-  <p class="lede">You are 5&#39;9&quot;, 150 lb, with a little muscle already, no equipment yet, and three hours a week. That is a genuinely good starting point. This site is the whole path: what to do, why it works, how to eat, how to recover, what to buy, and exactly how to measure that it&#39;s working.</p>
-</div>
+<section class="hero hero-home" aria-labelledby="hero-title">
+  <div class="hero-copy">
+    <p class="eyebrow">A field guide for starting from zero</p>
+    <h1 id="hero-title">Build the body. <em>Build the habit.</em></h1>
+    <p class="lede">Everything a beginner needs to start calisthenics, built around a 5&#39;9&quot;, 150 lb starting point, no equipment, and three focused hours a week.</p>
+    <div class="hero-cta">
+      <a class="btn" href="program.html#phase1">Start week one&nbsp; ↗</a>
+      <a class="btn ghost" href="fundamentals.html">Learn the method</a>
+    </div>
+    <p class="hero-proof">No equipment / 3 sessions weekly / 24-week progression</p>
+  </div>
+  <figure class="hero-media">
+    <img src="assets/images/discipline-hero.jpg" width="1586" height="992" alt="Athlete holding the top position on parallel bars in a quiet concrete training space" fetchpriority="high" decoding="async">
+    <figcaption><span>Practice over motivation</span><span>Vol. 01 / Start</span></figcaption>
+  </figure>
+</section>
+
+<nav class="pathways" aria-label="Beginner pathways">
+  <a class="pathway" href="program.html"><span class="num">01 / Train</span><strong>Follow the plan</strong><small>Three full-body sessions, mapped for 24 weeks.</small><span class="arrow" aria-hidden="true">→</span></a>
+  <a class="pathway" href="exercises.html"><span class="num">02 / Learn</span><strong>Master each movement</strong><small>Clear progressions, form cues, and exact rep gates.</small><span class="arrow" aria-hidden="true">→</span></a>
+  <a class="pathway" href="tracker.html"><span class="num">03 / Measure</span><strong>Record the work</strong><small>Private, browser-local workout and progress tracking.</small><span class="arrow" aria-hidden="true">→</span></a>
+  <a class="pathway" href="fundamentals.html"><span class="num">04 / Understand</span><strong>Know why it works</strong><small>The principles that make every hard set count.</small><span class="arrow" aria-hidden="true">→</span></a>
+</nav>
+
+<p class="eyebrow">The starting point / Your numbers</p>
 
 <div class="grid grid-3">
   <div class="stat"><div class="k">Your BMI</div><div class="v">22.1</div><div class="d">Healthy range. You are not underweight — you are <em>under-muscled</em>. Different problem, different fix.</div></div>
@@ -49,6 +84,8 @@
   <b>The honest summary, in one paragraph.</b>
   Pick a small number of hard movements. Do them 3 times a week. Every week, add a rep or make them slightly harder. Eat about 300 calories more than you burn, with 150 g of protein. Sleep 8 hours. Write down what you did. Do that for a year and you will not recognize yourself. Everything below is detail on top of those five sentences — the detail matters, but it is detail.
 </div>
+
+<blockquote class="statement">You do not need to feel ready. <em>Ready is built through repetition.</em></blockquote>
 
 <h2>What calisthenics actually is (and isn&#39;t)</h2>
 
@@ -201,8 +238,23 @@
 
 </main>
 <footer class="site-footer">
-  <p><strong>This site is educational, not medical advice.</strong> Bodyweight training is low-risk, but you are still loading joints and connective tissue. If you have a pre-existing injury, a heart or joint condition, or you get sharp pain that does not go away, talk to a doctor or a physical therapist before continuing.</p>
-  <p>Built for a 5'9", 150 lb beginner training three days a week, starting from the floor. All units are US customary (lb, in, oz, °F).</p>
+  <div class="footer-inner">
+    <div class="footer-lead">
+      <a class="footer-brand" href="index.html">CLSTHNCS</a>
+      <p>Earn the next rep.<br><em>Then return tomorrow.</em></p>
+    </div>
+    <div class="footer-index" aria-label="Footer navigation">
+      <a href="fundamentals.html">Learn</a>
+      <a href="program.html">Train</a>
+      <a href="tracker.html">Measure</a>
+      <a href="recovery.html">Recover</a>
+    </div>
+    <div class="footer-notes">
+      <p><strong>Educational, not medical advice.</strong> Bodyweight training still loads joints and connective tissue. If you have a pre-existing injury, a heart or joint condition, or persistent sharp pain, talk to a doctor or physical therapist before continuing.</p>
+      <p>Built for a 5'9&quot;, 150 lb beginner training three days a week, starting from the floor. US customary units throughout.</p>
+    </div>
+  </div>
+  <div class="footer-base"><span>Beginner field guide / Edition 001</span><span>Practice over motivation.</span></div>
 </footer>
 </body>
 </html>

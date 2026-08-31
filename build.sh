@@ -16,3 +16,11 @@ build recovery.html     "Recovery & Injury" "Sleep protocol, rest days, soreness
 build gear.html         "Gear & Shopping List" "What calisthenics equipment to buy in what order, with price ranges, pull-up bar comparisons, and what to skip."
 build tracker.html      "Tracker"           "A local workout, body-metric, and baseline-test tracker that stores everything in your browser."
 build faq.html          "FAQ & Myths"       "Direct answers to common beginner calisthenics questions, myths worth unlearning, and a troubleshooting table."
+build search.html       "Search"            "Search every section of the site. Works offline once the page has been visited."
+
+# Search index, built from the generated pages.
+python3 _partials/mkindex.py
+
+# Service worker. Its version is a hash of everything it caches, so a rebuild
+# automatically invalidates the previous offline copy.
+python3 _partials/mksw.py

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f4f4f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+<title>Search · CLSTHNCS</title>
+<meta name="description" content="Search every section of the site. Works offline once the page has been visited.">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230a0a0a'/%3E%3Cpath d='M69 31c-5-6-11-9-19-9-16 0-28 12-28 28s12 28 28 28c8 0 15-3 20-9l-9-9c-3 3-6 5-11 5-8 0-14-6-14-15s6-15 14-15c4 0 8 2 11 5z' fill='white'/%3E%3C/svg%3E">
+<script src="assets/site.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<div class="scroll-progress" aria-hidden="true"><span></span></div>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="index.html" aria-label="CLSTHNCS home">
+      <span class="brand-mark">C</span>
+      <span class="brand-name">CLSTHNCS</span>
+      <span class="brand-edition">Beginner / 001</span>
+    </a>
+    <div class="header-actions">
+      <a class="header-start" href="program.html">Start training <span aria-hidden="true">↗</span></a>
+      <button class="theme-toggle" type="button" aria-label="Switch color theme"><span aria-hidden="true">◐</span><span class="theme-label">Theme</span></button>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation">
+        <span class="menu-label">Menu</span><span class="menu-icon" aria-hidden="true"></span>
+      </button>
+    </div>
+    <nav class="main" id="site-navigation" aria-label="Primary navigation">
+      <a href="index.html"><span>01</span>Start</a>
+      <a href="fundamentals.html"><span>02</span>Fundamentals</a>
+      <a href="exercises.html"><span>03</span>Exercises</a>
+      <a href="program.html"><span>04</span>Program</a>
+      <a href="goals.html"><span>05</span>Goals</a>
+      <a href="nutrition.html"><span>06</span>Nutrition</a>
+      <a href="recovery.html"><span>07</span>Recovery</a>
+      <a href="gear.html"><span>08</span>Gear</a>
+      <a href="tracker.html"><span>09</span>Tracker</a>
+      <a href="faq.html"><span>10</span>FAQ</a>
+      <a href="search.html"><span>11</span>Search</a>
+    </nav>
+  </div>
+</header>
+<main id="content">
+
+<style>
+  /* Scoped to the search page. Codex: fold into assets/style.css if you want. */
+  .sr { border-bottom: 1px solid var(--border); padding: .9rem 0; }
+  .sr:last-child { border-bottom: none; }
+  .sr a { text-decoration: none; }
+  .sr .crumb { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); font-weight: 700; }
+  .sr .sr-h { font-weight: 650; font-size: 1.02rem; margin: .15rem 0 .2rem; }
+  .sr .snip { font-size: .9rem; color: var(--text-muted); line-height: 1.5; }
+  .sr mark { background: var(--accent-soft); color: var(--accent); font-weight: 650; padding: 0 .1em; border-radius: 3px; }
+  .sr .subs { font-size: .8rem; color: var(--text-faint); margin-top: .25rem; }
+  #q { font-size: 1.1rem; padding: .7rem .9rem; }
+</style>
+
+<div class="hero">
+  <p class="eyebrow">Search</p>
+  <h1>Search the whole site</h1>
+  <p class="lede">Every section of every page, searchable offline. Press <code>/</code> from any page to land here.</p>
+</div>
+
+<div class="field">
+  <label for="q">Search</label>
+  <input id="q" type="search" placeholder="pull-up, protein, elbow pain, deload…" autocomplete="off" autofocus>
+</div>
+
+<div class="pill-row" id="suggest">
+  <span class="pill" data-q="first pull-up">first pull-up</span>
+  <span class="pill" data-q="protein">protein</span>
+  <span class="pill" data-q="elbow pain">elbow pain</span>
+  <span class="pill" data-q="deload">deload</span>
+  <span class="pill" data-q="pull-up bar">pull-up bar</span>
+  <span class="pill" data-q="handstand">handstand</span>
+  <span class="pill" data-q="rest between sets">rest between sets</span>
+  <span class="pill" data-q="legs">legs</span>
+</div>
+
+<p id="status" style="color:var(--text-muted);font-size:.9rem"></p>
+
+<div id="results"></div>
+
+<script>
+(function () {
+  var INDEX = null, ready = false;
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function terms(q) {
+    return q.toLowerCase().split(/[^a-z0-9'-]+/).filter(function (t) { return t.length > 1; });
+  }
+
+  function score(rec, ts, phrase) {
+    var h = rec.h.toLowerCase(), k = (rec.k || '').toLowerCase(), t = rec.t.toLowerCase(), s = 0, hit = 0;
+    ts.forEach(function (term) {
+      var inH = h.indexOf(term) >= 0, inK = k.indexOf(term) >= 0;
+      var n = 0, i = t.indexOf(term);
+      while (i >= 0 && n < 12) { n++; i = t.indexOf(term, i + term.length); }
+      if (inH) s += 12;
+      if (inK) s += 5;
+      s += Math.min(n, 6) * 1.5;
+      if (inH || inK || n) hit++;
+    });
+    if (hit < ts.length) s *= 0.25;           // partial matches rank far below full
+    if (phrase.length > 3) {
+      if (h.toLowerCase().indexOf(phrase) >= 0) s += 25;
+      if (t.indexOf(phrase) >= 0) s += 10;
+    }
+    return s;
+  }
+
+  function snippet(text, ts) {
+    var low = text.toLowerCase(), at = -1;
+    for (var i = 0; i < ts.length && at < 0; i++) at = low.indexOf(ts[i]);
+    if (at < 0) at = 0;
+    var start = Math.max(0, at - 90), end = Math.min(text.length, at + 210);
+    var out = esc((start ? '…' : '') + text.slice(start, end).trim() + (end < text.length ? '…' : ''));
+    ts.forEach(function (term) {
+      out = out.replace(new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<mark>$1</mark>');
+    });
+    return out;
+  }
+
+  function render(q) {
+    var box = $('results');
+    if (!ready) { $('status').textContent = 'Loading the index…'; return; }
+    q = (q || '').trim();
+    if (!q) {
+      box.innerHTML = '';
+      $('status').textContent = INDEX.records.length + ' sections across ' + INDEX.pages + ' pages indexed.';
+      return;
+    }
+    var ts = terms(q), phrase = q.toLowerCase();
+    if (!ts.length) { box.innerHTML = ''; $('status').textContent = 'Type at least two characters.'; return; }
+
+    var hits = INDEX.records
+      .map(function (r) { return { r: r, s: score(r, ts, phrase) }; })
+      .filter(function (x) { return x.s > 1; })
+      .sort(function (a, b) { return b.s - a.s; })
+      .slice(0, 40);
+
+    $('status').textContent = hits.length
+      ? hits.length + (hits.length === 40 ? '+ matches' : ' match' + (hits.length === 1 ? '' : 'es')) + ' for “' + q + '”'
+      : 'Nothing found for “' + q + '”. Try a shorter or more common word.';
+
+    box.innerHTML = hits.map(function (x) {
+      var r = x.r, href = r.p + (r.a ? '#' + r.a : '');
+      return '<div class="sr"><a href="' + esc(href) + '">' +
+        '<div class="crumb">' + esc(r.pt) + '</div>' +
+        '<div class="sr-h">' + esc(r.h) + '</div>' +
+        '<div class="snip">' + snippet(r.t, ts) + '</div>' +
+        (r.k ? '<div class="subs">' + esc(r.k) + '</div>' : '') +
+        '</a></div>';
+    }).join('');
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var input = $('q');
+    var initial = new URLSearchParams(location.search).get('q') || '';
+    if (initial) input.value = initial;
+    $('status').textContent = 'Loading the index…';
+
+    fetch('assets/search-index.json')
+      .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+      .then(function (data) { INDEX = data; ready = true; render(input.value); })
+      .catch(function () {
+        $('status').textContent = 'Could not load the search index. If you are offline, visit this page once while online and it will be cached.';
+      });
+
+    var t;
+    input.addEventListener('input', function () {
+      clearTimeout(t);
+      t = setTimeout(function () {
+        render(input.value);
+        var u = new URL(location.href);
+        if (input.value) u.searchParams.set('q', input.value); else u.searchParams.delete('q');
+        history.replaceState(null, '', u);
+      }, 120);
+    });
+
+    document.querySelectorAll('#suggest .pill').forEach(function (p) {
+      p.style.cursor = 'pointer';
+      p.addEventListener('click', function () {
+        input.value = p.getAttribute('data-q');
+        input.dispatchEvent(new Event('input'));
+        input.focus();
+      });
+    });
+  });
+})();
+</script>
+
+</main>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-lead">
+      <a class="footer-brand" href="index.html">CLSTHNCS</a>
+      <p>Earn the next rep.<br><em>Then return tomorrow.</em></p>
+    </div>
+    <div class="footer-index" aria-label="Footer navigation">
+      <a href="fundamentals.html">Learn</a>
+      <a href="program.html">Train</a>
+      <a href="tracker.html">Measure</a>
+      <a href="recovery.html">Recover</a>
+    </div>
+    <div class="footer-notes">
+      <p><strong>Educational, not medical advice.</strong> Bodyweight training still loads joints and connective tissue. If you have a pre-existing injury, a heart or joint condition, or persistent sharp pain, talk to a doctor or physical therapist before continuing.</p>
+      <p>Built for a 5'9&quot;, 150 lb beginner training three days a week, starting from the floor. US customary units throughout.</p>
+    </div>
+  </div>
+  <div class="footer-base"><span>Beginner field guide / Edition 001</span><span>Practice over motivation.</span></div>
+</footer>
+</body>
+</html>
