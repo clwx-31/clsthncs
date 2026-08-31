@@ -737,6 +737,9 @@ input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible
   .seg { width: 100%; display: grid !important; grid-template-columns: repeat(3, 1fr); }
   .no-print .seg { grid-template-columns: repeat(2, 1fr); }
   .seg button { min-width: 0; padding-right: .35rem !important; padding-left: .35rem !important; }
+  .timer-bar { gap: .55rem !important; padding: .65rem var(--page-pad) !important; }
+  .timer-bar .btn-row { min-width: 0; flex: 1; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .25rem; }
+  .timer-bar .btn-row .btn { min-width: 0; min-height: 2rem; padding: .3rem .15rem !important; font-size: .52rem !important; }
   .footer-inner { grid-template-columns: 1fr; }
   .footer-notes { grid-column: auto; }
   .footer-base { flex-direction: column; }

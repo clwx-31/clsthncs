@@ -317,6 +317,30 @@ async function load(page) {
     check('returns results', d.querySelectorAll('.sr').length > 0, d.getElementById('status').textContent);
     check('highlights matches', /<mark>/.test(html));
     check('links have anchors', /href="[a-z]+\.html#/.test(html));
+    // keyboard navigation
+    const key = k => q.dispatchEvent(new w.KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true }));
+    key('ArrowDown');
+    check('arrow down selects the first hit', d.querySelectorAll('.sr.sel').length === 1);
+    check('first hit is the one selected', d.querySelector('.sr').classList.contains('sel'));
+    key('ArrowDown');
+    check('arrow down moves on', !d.querySelector('.sr').classList.contains('sel') &&
+          d.querySelectorAll('.sr.sel').length === 1);
+    key('ArrowUp'); key('ArrowUp');
+    check('arrow up wraps to the last hit',
+          d.querySelectorAll('.sr')[d.querySelectorAll('.sr').length - 1].classList.contains('sel'));
+    check('only ever one row selected', d.querySelectorAll('.sr.sel').length === 1);
+
+    key('Escape');
+    await new Promise(r => setTimeout(r, 250));
+    check('escape clears the query', q.value === '');
+    check('escape clears the results', d.querySelectorAll('.sr').length === 0);
+
+    // suggestion chips still drive the search after the markup change
+    d.querySelector('#suggest [data-q]').dispatchEvent(new w.Event('click', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 300));
+    check('suggestion chip runs a search', d.querySelectorAll('.sr').length > 0,
+          d.getElementById('status').textContent);
+
     q.value = 'zzzzqqqq'; q.dispatchEvent(new w.Event('input'));
     await new Promise(r => setTimeout(r, 400));
     check('no-match message', /Nothing found/.test(d.getElementById('status').textContent), d.getElementById('status').textContent);
