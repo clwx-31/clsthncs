@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f4f4f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)">
+<title>Rung Finder · CLSTHNCS</title>
+<meta name="description" content="Eleven questions that set your starting rung on every calisthenics progression ladder.">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230a0a0a'/%3E%3Cpath d='M69 31c-5-6-11-9-19-9-16 0-28 12-28 28s12 28 28 28c8 0 15-3 20-9l-9-9c-3 3-6 5-11 5-8 0-14-6-14-15s6-15 14-15c4 0 8 2 11 5z' fill='white'/%3E%3C/svg%3E">
+<script src="assets/site.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#content">Skip to content</a>
+<div class="scroll-progress" aria-hidden="true"><span></span></div>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="index.html" aria-label="CLSTHNCS home">
+      <span class="brand-mark">C</span>
+      <span class="brand-name">CLSTHNCS</span>
+      <span class="brand-edition">Beginner / 001</span>
+    </a>
+    <div class="header-actions">
+      <a class="header-start" href="program.html">Start training <span aria-hidden="true">↗</span></a>
+      <button class="theme-toggle" type="button" aria-label="Switch color theme"><span aria-hidden="true">◐</span><span class="theme-label">Theme</span></button>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-navigation">
+        <span class="menu-label">Menu</span><span class="menu-icon" aria-hidden="true"></span>
+      </button>
+    </div>
+    <nav class="main" id="site-navigation" aria-label="Primary navigation">
+      <!-- Reading order: the guide -->
+      <a href="index.html"><span>01</span>Start</a>
+      <a href="fundamentals.html"><span>02</span>Fundamentals</a>
+      <a href="exercises.html"><span>03</span>Exercises</a>
+      <a href="program.html"><span>04</span>Program</a>
+      <a href="goals.html"><span>05</span>Goals</a>
+      <a href="nutrition.html"><span>06</span>Nutrition</a>
+      <a href="recovery.html"><span>07</span>Recovery</a>
+      <a href="gear.html"><span>08</span>Gear</a>
+      <!-- Tools you use while training. Codex: these three are the "app" half of
+           the site and would justify visual separation from the reading pages. -->
+      <a href="today.html"><span>09</span>Today</a>
+      <a href="rungs.html"><span>10</span>Rungs</a>
+      <a href="tracker.html"><span>11</span>Tracker</a>
+      <!-- Reference -->
+      <a href="faq.html"><span>12</span>FAQ</a>
+      <a href="references.html"><span>13</span>References</a>
+      <a href="search.html"><span>14</span>Search</a>
+    </nav>
+  </div>
+</header>
+<main id="content">
+
+<style>
+  .rq { border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-raised); padding: 1.1rem 1.2rem; margin-bottom: 1rem; }
+  .rq h3 { margin: 0 0 .2rem; font-size: 1.05rem; }
+  .rq .sub { font-size: .85rem; color: var(--text-muted); margin: 0 0 .7rem; }
+  .rq label.opt { display: flex; gap: .6rem; align-items: flex-start; font-weight: 400; color: var(--text); font-size: .95rem; padding: .3rem 0; margin: 0; cursor: pointer; }
+  .rq input[type="radio"] { width: auto; margin-top: .35rem; flex: none; accent-color: var(--accent); }
+  .rq .gate { color: var(--text-faint); font-size: .82rem; }
+  .rq.answered { border-color: var(--good); }
+</style>
+
+<div class="hero">
+  <p class="eyebrow">Rung finder</p>
+  <h1>Which rung are you on?</h1>
+  <p class="lede">Eleven questions, about two minutes. For each movement pattern, pick the hardest version you can currently do for <strong>at least 5 but no more than about 15 clean, full-range reps</strong> — that's the version you should be training. Your answers save to this browser and drive <a href="today.html">the session runner</a>.</p>
+</div>
+
+<div class="note">
+  <b>Two rules that make this easy.</b> If you can already do more than 15 clean reps of something, it's too easy — pick the next one up. If you can't do 5 with full range and control, it's too hard — pick the one below. Being one rung too <em>easy</em> costs you a week. Being one rung too <em>hard</em> costs you a month of half-reps and sore joints, so when you're between two, choose the easier one.
+</div>
+
+<div class="btn-row">
+  <button class="btn ghost" type="button" id="btn-none">I&#39;ve never trained — use beginner defaults</button>
+</div>
+
+<div id="questions"></div>
+
+<h2 id="result">Your rungs</h2>
+<div class="table-wrap"><table id="summary"></table></div>
+
+<div class="btn-row">
+  <button class="btn" type="button" id="btn-save">Save and open today&#39;s session</button>
+  <button class="btn ghost" type="button" id="btn-reset">Reset all answers</button>
+</div>
+<p id="count" style="font-size:.9rem;color:var(--text-muted);margin-bottom:.25rem"></p>
+<p id="saved" style="font-size:.9rem;color:var(--text-muted)"></p>
+
+<h2 id="how">How to use these</h2>
+
+<ul>
+  <li><strong>Train the rung, don&#39;t skip ahead.</strong> The rep gate on each rung isn&#39;t about your muscles — those are ready long before your tendons are. It buys the connective-tissue adaptation that prevents month-four elbow and shoulder problems. <a href="recovery.html#tendons">Why →</a></li>
+  <li><strong>Move up when every set hits the top of the range</strong> with clean form and 1–2 reps left in the tank. Then reset to the bottom of the range on the new rung. That&#39;s <a href="fundamentals.html#double">double progression</a>, and it&#39;s the whole progression mechanism.</li>
+  <li><strong>Expect different rungs on different patterns.</strong> Almost everyone is further along on pushing than pulling, and further along on both than on legs. That&#39;s normal, not a flaw.</li>
+  <li><strong>Redo this whenever something feels off</strong> — after a layoff, after an injury, or when an exercise stops feeling hard. It takes two minutes.</li>
+</ul>
+
+<script src="assets/program-data.js"></script>
+<script>
+(function () {
+  var C = window.CAL;
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function load(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+  function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+
+  var PROMPTS = {
+    push:     'Hardest push-up variation you can do for 5+ clean reps, chest to the floor.',
+    hpull:    'Hardest row you can do for 5+ reps, chest touching the bar or table edge.',
+    vpull:    'Hardest vertical pull you can manage. Be honest — most beginners are on the first three.',
+    vpush:    'Hardest overhead push you can do for 5+ reps, or the longest hold you can keep.',
+    dip:      'Hardest dip variation for 5+ reps, upper arms to parallel.',
+    squat:    'Hardest single-leg or two-leg squat for 5+ reps per leg, hip crease below the knee.',
+    hinge:    'Hardest hamstring or glute exercise you can do with control.',
+    core:     'Hardest anti-extension hold you can keep with your lower back flat on the floor.',
+    legraise: 'Hardest leg raise you can do without swinging or arching your back.',
+    lsit:     'Hardest L-sit position you can hold for 5+ seconds.',
+    handstand:'Where you are with handstands right now.'
+  };
+
+  var answers = load('cal-rungs', null);
+  var pending = answers ? Object.assign({}, answers) : {};
+
+  function renderQuestions() {
+    var keys = Object.keys(C.LADDERS);
+    $('questions').innerHTML = keys.map(function (k, qi) {
+      var l = C.LADDERS[k];
+      var opts = l.rungs.map(function (r, i) {
+        var checked = pending[k] === i ? ' checked' : '';
+        return '<label class="opt"><input type="radio" name="q-' + k + '" value="' + i + '"' + checked + '>' +
+          '<span><strong>' + esc(r.n) + '</strong> <span class="gate">— move up at ' + esc(r.gate) + '</span></span></label>';
+      }).join('');
+      return '<div class="rq' + (pending[k] != null ? ' answered' : '') + '" id="rq-' + k + '">' +
+        '<h3>' + (qi + 1) + '. ' + esc(l.name) + '</h3>' +
+        '<p class="sub">' + esc(PROMPTS[k] || '') + ' <a href="' + l.page + '">See the full ladder →</a></p>' +
+        opts + '</div>';
+    }).join('');
+
+    $('questions').querySelectorAll('input[type="radio"]').forEach(function (r) {
+      r.addEventListener('change', function () {
+        var k = r.name.slice(2);
+        pending[k] = +r.value;
+        $('rq-' + k).classList.add('answered');
+        renderSummary();
+      });
+    });
+  }
+
+  function renderSummary() {
+    var keys = Object.keys(C.LADDERS);
+    var answered = keys.filter(function (k) { return pending[k] != null; }).length;
+    $('summary').innerHTML =
+      '<thead><tr><th>Pattern</th><th>Your rung</th><th class="num">Move up at</th></tr></thead><tbody>' +
+      keys.map(function (k) {
+        var l = C.LADDERS[k];
+        if (pending[k] == null) {
+          return '<tr><td>' + esc(l.name) + '</td><td colspan="2" style="color:var(--text-faint)">not answered yet — <a href="#rq-' + k + '">jump to it</a></td></tr>';
+        }
+        var i = Math.min(pending[k], l.rungs.length - 1);
+        return '<tr><td>' + esc(l.name) + '</td><td><strong>' + esc(l.rungs[i].n) + '</strong> ' +
+          '<span style="color:var(--text-muted)">(' + (i + 1) + ' of ' + l.rungs.length + ')</span></td>' +
+          '<td class="num">' + esc(l.rungs[i].gate) + '</td></tr>';
+      }).join('') + '</tbody>';
+    $('count').textContent = answered + ' of ' + keys.length + ' answered.';
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    renderQuestions(); renderSummary();
+
+    $('btn-none').addEventListener('click', function () {
+      pending = C.defaultRungs();
+      renderQuestions(); renderSummary();
+      $('saved').textContent = 'Beginner defaults filled in. Adjust anything that looks wrong, then save.';
+    });
+
+    $('btn-reset').addEventListener('click', function () {
+      pending = {}; renderQuestions(); renderSummary();
+      $('saved').textContent = 'Cleared.';
+    });
+
+    $('btn-save').addEventListener('click', function () {
+      var merged = Object.assign(C.defaultRungs(), load('cal-rungs', {}), pending);
+      save('cal-rungs', merged);
+      $('saved').innerHTML = '<strong style="color:var(--good)">Saved.</strong> Opening today’s session…';
+      setTimeout(function () { location.href = 'today.html'; }, 600);
+    });
+  });
+})();
+</script>
+
+<div class="next-prev">
+  <a href="exercises.html"><span class="k">Previous</span><span class="t">← The exercise ladders</span></a>
+  <a href="today.html"><span class="k">Next</span><span class="t">Run today&#39;s session →</span></a>
+</div>
+
+</main>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-lead">
+      <a class="footer-brand" href="index.html">CLSTHNCS</a>
+      <p>Earn the next rep.<br><em>Then return tomorrow.</em></p>
+    </div>
+    <div class="footer-index" aria-label="Footer navigation">
+      <a href="fundamentals.html">Learn</a>
+      <a href="program.html">Train</a>
+      <a href="tracker.html">Measure</a>
+      <a href="recovery.html">Recover</a>
+    </div>
+    <div class="footer-notes">
+      <p><strong>Educational, not medical advice.</strong> Bodyweight training still loads joints and connective tissue. If you have a pre-existing injury, a heart or joint condition, or persistent sharp pain, talk to a doctor or physical therapist before continuing.</p>
+      <p>Built for a 5'9&quot;, 150 lb beginner training three days a week, starting from the floor. US customary units throughout.</p>
+    </div>
+  </div>
+  <div class="footer-base"><span>Beginner field guide / Edition 001</span><span>Practice over motivation.</span></div>
+</footer>
+</body>
+</html>

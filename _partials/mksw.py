@@ -11,7 +11,8 @@ import hashlib
 import os
 
 shell = sorted(glob.glob("*.html"))
-shell += ["assets/style.css", "assets/site.js", "assets/search-index.json"]
+shell += sorted(glob.glob("assets/*.css")) + sorted(glob.glob("assets/*.js"))
+shell += ["assets/search-index.json"]
 shell = [f for f in shell if os.path.isfile(f)]
 
 extras = sorted(glob.glob("assets/images/*")) + sorted(glob.glob("assets/*.woff2"))

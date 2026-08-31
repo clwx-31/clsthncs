@@ -3,7 +3,7 @@
    Source template: _partials/sw.js  ·  Version is a content hash, so a rebuild
    invalidates the old cache automatically. */
 
-var VERSION = '8b38551274e2';
+var VERSION = '2f2e6ccf0932';
 var CACHE = 'calisthenics-' + VERSION;
 /* Required: the site is broken offline without these. If any one fails to
    fetch, install fails and the old cache is kept — which is the right outcome. */
@@ -18,9 +18,12 @@ var SHELL = [
   'program.html',
   'recovery.html',
   'references.html',
+  'rungs.html',
   'search.html',
+  'today.html',
   'tracker.html',
   'assets/style.css',
+  'assets/program-data.js',
   'assets/site.js',
   'assets/search-index.json'
 ];

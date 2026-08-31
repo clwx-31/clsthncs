@@ -41,7 +41,7 @@ const server = http.createServer((req, res) => {
 let BASE;
 const PAGES = ['index.html','fundamentals.html','exercises.html','program.html','goals.html',
                'nutrition.html','recovery.html','gear.html','tracker.html','faq.html',
-               'references.html','search.html'];
+               'today.html','rungs.html','references.html','search.html'];
 
 let failures = [];
 function check(name, cond, detail) {
@@ -208,6 +208,100 @@ async function load(page) {
     q.value = 'zzzzqqqq'; q.dispatchEvent(new w.Event('input'));
     await new Promise(r => setTimeout(r, 400));
     check('no-match message', /Nothing found/.test(d.getElementById('status').textContent), d.getElementById('status').textContent);
+  }
+
+  console.log('\n=== session runner (today.html) ===');
+  {
+    const w = loaded['today.html'].window, d = w.document;
+    const click = el => el.dispatchEvent(new w.Event('click', { bubbles: true }));
+
+    check('prompts for setup when unconfigured', d.getElementById('nodata').style.display !== 'none');
+    click(d.getElementById('p-today'));
+    check('week 1 after "starts today"', /^1\b/.test(d.getElementById('s-week').textContent.trim()),
+          d.getElementById('s-week').textContent);
+    check('phase is Onramp', /Onramp/.test(d.getElementById('s-phase').textContent), d.getElementById('s-phase').textContent);
+    check('session A suggested first', d.getElementById('s-sess').textContent.trim() === 'A', d.getElementById('s-sess').textContent);
+
+    const rows = d.querySelectorAll('.ex-row');
+    check('session A has 7 exercises', rows.length === 7, String(rows.length));
+    check('skill row flagged', d.querySelectorAll('.ex-row.skill-row').length === 1);
+    // week 1 ramps: a base-4 exercise should show 2 sets
+    const pushRow = [...rows].find(r => /push-up/i.test(r.querySelector('.ex-name').textContent));
+    check('week 1 ramps sets down to 2', pushRow.querySelectorAll('input[type=number]').length === 2,
+          String(pushRow.querySelectorAll('input[type=number]').length));
+
+    // enter a set -> row marked done + persisted + timer starts
+    const inputs = pushRow.querySelectorAll('input[type=number]');
+    inputs.forEach(i => { i.value = '8'; i.dispatchEvent(new w.Event('change', { bubbles: true })); });
+    check('row marked complete', pushRow.classList.contains('done'));
+    check('entries persisted', JSON.stringify(JSON.parse(w.localStorage.getItem('cal-session'))).includes('8'));
+    check('rest timer running', /^\d+:\d\d$/.test(d.getElementById('t-num').textContent),
+          d.getElementById('t-num').textContent);
+
+    // rung adjustment changes the prescribed exercise
+    const before = pushRow.querySelector('.ex-name').textContent;
+    click(d.querySelector('[data-rung="push"][data-dir="1"]'));
+    const after = [...d.querySelectorAll('.ex-row')].map(r => r.querySelector('.ex-name').textContent).join('|');
+    check('harder rung changes exercise name', !after.includes(before.trim()), before + ' -> ' + after.slice(0, 60));
+    check('rung saved', JSON.parse(w.localStorage.getItem('cal-rungs')).push === 2,
+          String(JSON.parse(w.localStorage.getItem('cal-rungs')).push));
+
+    // finish writes into the shared workout log
+    const p2 = d.querySelector('.ex-row:nth-child(2) input[type=number]');
+    if (p2) { p2.value = '10'; p2.dispatchEvent(new w.Event('change', { bubbles: true })); }
+    click(d.getElementById('btn-finish'));
+    const logged = JSON.parse(w.localStorage.getItem('cal-workouts') || '[]');
+    check('finish wrote workout entries', logged.length > 0, String(logged.length));
+    check('entries carry a ladder key', logged.every(e => !!e.key));
+    check('entries carry numeric sets', logged.every(e => e.sets.every(n => typeof n === 'number')));
+    check('session label recorded', /^A · /.test(logged[0].session), logged[0].session);
+    check('advances to session B', d.getElementById('s-sess').textContent.trim() === 'B',
+          d.getElementById('s-sess').textContent);
+    check('entered numbers cleared', Object.keys(JSON.parse(w.localStorage.getItem('cal-session'))).length === 0);
+
+    // manual session pick
+    click(d.querySelector('[data-pick="C"]'));
+    check('manual pick switches session', d.getElementById('s-sess').textContent.trim() === 'C');
+    check('session C has 8 exercises', d.querySelectorAll('.ex-row').length === 8,
+          String(d.querySelectorAll('.ex-row').length));
+
+    // deload week
+    const wk = d.getElementById('p-week'); wk.value = '6';
+    click(d.getElementById('p-save'));
+    check('week 6 recognised', /^6\b/.test(d.getElementById('s-week').textContent.trim()), d.getElementById('s-week').textContent);
+    check('deload notice shown', d.getElementById('deload').style.display !== 'none');
+    // week 20 -> Build phase
+    wk.value = '20'; click(d.getElementById('p-save'));
+    check('week 20 is Build phase', /Build/.test(d.getElementById('s-phase').textContent), d.getElementById('s-phase').textContent);
+  }
+
+  console.log('\n=== rung finder (rungs.html) ===');
+  {
+    const w = loaded['rungs.html'].window, d = w.document;
+    const click = el => el.dispatchEvent(new w.Event('click', { bubbles: true }));
+
+    check('11 ladders rendered', d.querySelectorAll('.rq').length === 11, String(d.querySelectorAll('.rq').length));
+    check('summary lists unanswered', /not answered yet/.test(d.getElementById('summary').textContent));
+
+    const radio = d.querySelector('input[name="q-push"][value="5"]');
+    radio.checked = true; radio.dispatchEvent(new w.Event('change', { bubbles: true }));
+    check('answer marks the card', d.getElementById('rq-push').classList.contains('answered'));
+    check('summary reflects the answer', /Full push-up/.test(d.getElementById('summary').textContent),
+          d.getElementById('summary').textContent.slice(0, 80));
+
+    click(d.getElementById('btn-none'));
+    check('defaults fill every ladder', !/not answered yet/.test(d.getElementById('summary').textContent));
+    check('progress counter complete', /11 of 11/.test(d.getElementById('count').textContent),
+          d.getElementById('count').textContent);
+    check('status message kept alongside count', /defaults/i.test(d.getElementById('saved').textContent),
+          d.getElementById('saved').textContent);
+
+    click(d.getElementById('btn-save'));
+    const saved = JSON.parse(w.localStorage.getItem('cal-rungs') || '{}');
+    check('rungs saved to storage', Object.keys(saved).length === 11, String(Object.keys(saved).length));
+
+    click(d.getElementById('btn-reset'));
+    check('reset clears answers', /not answered yet/.test(d.getElementById('summary').textContent));
   }
 
   console.log('\n=== shared behavior ===');
