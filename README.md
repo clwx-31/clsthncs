@@ -43,8 +43,21 @@ assets/images/           photography and session illustrations
 Verify before committing:
 
 ```sh
-./build.sh && python3 _partials/check.py
+npm install          # once — pulls jsdom for the test harness
+npm run verify       # build + static checks + behavior tests
 ```
+
+`npm run verify` runs three things:
+
+- **`./build.sh`** — regenerates every page, the search index, and `sw.js`.
+- **`_partials/check.py`** — internal links, anchors, asset paths, tag balance,
+  skip-link targets, and the service worker precache list. No dependencies.
+- **`_partials/test.js`** — serves the repo on an ephemeral port, loads every
+  page in jsdom, and asserts that nothing throws and that the nutrition
+  calculator, body-fat estimator, tracker (weights, rolling average, chart,
+  personal bests, baseline-test deltas, deletion, persistence) and search all
+  produce correct output. Run this after any restyle: it catches markup changes
+  that silently break the scripts.
 
 Edit a body file (or the header, footer, or stylesheet), then:
 
