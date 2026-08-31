@@ -69,6 +69,13 @@
   .cal-table tr.deload { background: var(--warn-soft); }
   .cal-table .note-cell { min-width: 8rem; }
 
+  /* Same control as the session runner. Duplicated rather than added to
+     style.css so page styling stays out of Codex's way; fold both into
+     assets/style.css when the design settles. */
+  .seg { display: inline-flex; border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; }
+  .seg button { border: none; background: var(--bg); color: var(--text-muted); padding: .35rem .75rem; font: inherit; font-size: .88rem; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; font-weight: 650; }
+
   @media print {
     .site-header, .site-footer, .next-prev, .no-print, .scroll-progress, .skip-link { display: none !important; }
     main { max-width: none !important; padding: 0 !important; }

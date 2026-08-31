@@ -1,12 +1,22 @@
 #!/usr/bin/env python3
 """Sanity checks on the generated pages: internal links, anchors, asset paths,
-tag balance, and the service worker precache list."""
+tag balance, skip-link targets, CSS class coverage, and the service worker
+precache list. No third-party dependencies — see _partials/test.js for the
+behavior tests."""
 import glob
 import os
 import re
 import sys
 
 SCRIPTS = re.compile(r"<script\b.*?</script>", re.S | re.I)
+COMMENTS = re.compile(r"/\*.*?\*/", re.S)
+
+# Classes that are markup hooks or deliberately carry no styling.
+ALLOW_UNSTYLED = {"menu-label"}
+
+
+def strip_comments(text):
+    return COMMENTS.sub("", text)
 TAGS = ["div", "table", "details", "main", "section", "ul", "ol", "tr", "td", "th", "nav", "header", "footer"]
 
 
@@ -15,6 +25,11 @@ def main():
     raw = {p: open(p, encoding="utf-8").read() for p in pages}
     clean = {p: SCRIPTS.sub("", s) for p, s in raw.items()}
     ids = {p: set(re.findall(r'id="([^"]+)"', s)) for p, s in raw.items()}
+    css_classes = set()
+    if os.path.exists("assets/style.css"):
+        css_classes = set(re.findall(
+            r"\.([A-Za-z][\w-]*)",
+            strip_comments(open("assets/style.css", encoding="utf-8").read())))
     problems = []
 
     for p, s in clean.items():
@@ -41,6 +56,16 @@ def main():
         if 'id="content"' not in s:
             problems.append("%s: no id=\"content\" for the skip link" % p)
 
+        # Every class in the markup must be defined in the shared stylesheet or
+        # in a <style> block on that page. Catches classes that lose their
+        # styling in a restyle, or that were only ever defined on another page.
+        inline = " ".join(re.findall(r"<style\b[^>]*>(.*?)</style>", raw[p], re.S))
+        defined = css_classes | set(re.findall(r"\.([A-Za-z][\w-]*)", strip_comments(inline)))
+        for attr in re.findall(r'class="([^"]+)"', s):
+            for cls in attr.split():
+                if cls not in defined and cls not in ALLOW_UNSTYLED:
+                    problems.append("%s: class .%s is used but never defined" % (p, cls))
+
     if os.path.exists("sw.js"):
         listed = re.findall(r"^  '([^']+)',?$", open("sw.js", encoding="utf-8").read(), re.M)
         for a in listed:
@@ -54,7 +79,7 @@ def main():
         print("\n".join(problems))
         print("\n%d problem(s)" % len(problems))
         return 1
-    print("OK — %d pages: links, anchors, assets, tag balance, skip-link targets, precache list" % len(pages))
+    print("OK — %d pages: links, anchors, assets, tag balance, skip-link targets, CSS classes, precache list" % len(pages))
     return 0
 
 
