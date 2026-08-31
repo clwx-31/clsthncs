@@ -28,3 +28,6 @@ python3 _partials/mkindex.py
 # Service worker. Its version is a hash of everything it caches, so a rebuild
 # automatically invalidates the previous offline copy.
 python3 _partials/mksw.py
+
+# sitemap.xml and robots.txt.
+python3 _partials/mkmeta.py

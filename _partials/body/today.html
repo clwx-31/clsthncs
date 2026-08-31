@@ -22,6 +22,8 @@
   .seg { display: inline-flex; border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; }
   .seg button { border: none; background: var(--bg); color: var(--text-muted); padding: .35rem .75rem; font: inherit; font-size: .88rem; cursor: pointer; }
   .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; font-weight: 650; }
+  /* Keeps the document outline intact (h1 → h2) without the visual weight of a section heading. */
+  .card-h { font-size: .95rem; font-weight: 700; letter-spacing: 0; text-transform: none; margin: 0 0 .5rem; border: none; padding: 0; }
 </style>
 
 <div class="hero">
@@ -54,7 +56,7 @@
 </div>
 
 <div id="warmup" class="card" style="display:none">
-  <h4>Before you start — 8 minutes</h4>
+  <h2 class="card-h">Before you start — 8 minutes</h2>
   <ul class="checklist" style="margin-bottom:0">
     <li><input type="checkbox" id="wu-1"><label for="wu-1" style="font-weight:400;color:var(--text);margin:0">3 minutes light cardio — jog in place, step-jacks, until you're warm</label></li>
     <li><input type="checkbox" id="wu-2"><label for="wu-2" style="font-weight:400;color:var(--text);margin:0">Wrist prep sequence — all six positions <a href="exercises.html#prep">(how)</a></label></li>

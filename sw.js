@@ -3,7 +3,7 @@
    Source template: _partials/sw.js  ·  Version is a content hash, so a rebuild
    invalidates the old cache automatically. */
 
-var VERSION = 'b2504939b5d7';
+var VERSION = 'a0c9625551b9';
 var CACHE = 'calisthenics-' + VERSION;
 /* Required: the site is broken offline without these. If any one fails to
    fetch, install fails and the old cache is kept — which is the right outcome. */
@@ -33,7 +33,6 @@ var SHELL = [
    missing file can never break the install. They are also cached on first view
    by the fetch handler below. */
 var EXTRAS = [
-  'assets/images/discipline-hero.jpg',
   'assets/images/discipline-hero.webp',
   'assets/images/workout-build-legs.webp',
   'assets/images/workout-build-pull.webp',
