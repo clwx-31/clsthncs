@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tracker · Calisthenics Start</title>
+<meta name="description" content="A local workout, body-metric, and baseline-test tracker that stores everything in your browser.">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
+<script src="assets/site.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="index.html">Calisthenics<span>Start</span></a>
+    <nav class="main">
+      <a href="index.html">Start</a>
+      <a href="fundamentals.html">Fundamentals</a>
+      <a href="exercises.html">Exercises</a>
+      <a href="program.html">Program</a>
+      <a href="goals.html">Goals</a>
+      <a href="nutrition.html">Nutrition</a>
+      <a href="recovery.html">Recovery</a>
+      <a href="gear.html">Gear</a>
+      <a href="tracker.html">Tracker</a>
+      <a href="faq.html">FAQ</a>
+    </nav>
+    <button class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
+  </div>
+</header>
+<main class="wide">
+
+<div class="hero">
+  <p class="eyebrow">Tracker</p>
+  <h1>Log it, or it didn&#39;t happen</h1>
+  <p class="lede">Progressive overload requires knowing what you did last time. This tracker stores everything in your browser&#39;s local storage — nothing is uploaded anywhere, there&#39;s no account, and nobody else can see it. Export a backup regularly, because clearing your browser data will erase it.</p>
+</div>
+
+<div class="warn-box">
+  <b>Back up your data.</b> This lives only in this browser, on this device. Clearing site data, using a different browser, or private browsing will lose it. Hit <strong>Export JSON</strong> every few weeks and keep the file somewhere safe. A paper notebook is an entirely respectable alternative to all of this.
+</div>
+
+<h2 id="weight">Body metrics</h2>
+
+<div class="card">
+  <div class="field-row">
+    <div class="field"><label for="w-date">Date</label><input id="w-date" type="date"></div>
+    <div class="field"><label for="w-wt">Weight (lb)</label><input id="w-wt" type="number" step="0.1" placeholder="150.0"></div>
+    <div class="field"><label for="w-waist">Waist (in)</label><input id="w-waist" type="number" step="0.25" placeholder="optional"></div>
+    <div class="field"><label for="w-arm">Arm (in)</label><input id="w-arm" type="number" step="0.25" placeholder="optional"></div>
+    <div class="field"><label for="w-chest">Chest (in)</label><input id="w-chest" type="number" step="0.25" placeholder="optional"></div>
+    <div class="field"><label for="w-thigh">Thigh (in)</label><input id="w-thigh" type="number" step="0.25" placeholder="optional"></div>
+  </div>
+  <div class="btn-row" style="margin-bottom:0">
+    <button class="btn" id="w-save" type="button">Save entry</button>
+    <button class="btn ghost" id="w-clear" type="button">Clear all body metrics</button>
+  </div>
+</div>
+
+<div class="grid grid-3">
+  <div class="stat"><div class="k">Latest weight</div><div class="v" id="s-latest">—</div><div class="d" id="s-latest-d">No entries yet.</div></div>
+  <div class="stat"><div class="k">7-day average</div><div class="v" id="s-avg">—</div><div class="d">The only weight number worth reacting to.</div></div>
+  <div class="stat"><div class="k">Weekly trend</div><div class="v" id="s-trend">—</div><div class="d" id="s-trend-d">Target for a lean bulk: +0.25 to +0.5 lb/week.</div></div>
+  <div class="stat"><div class="k">Total change</div><div class="v" id="s-total">—</div><div class="d">Since your first entry.</div></div>
+  <div class="stat"><div class="k">Entries logged</div><div class="v" id="s-count">0</div><div class="d">Daily weigh-ins make the average meaningful.</div></div>
+  <div class="stat"><div class="k">Waist change</div><div class="v" id="s-waist">—</div><div class="d">Should grow no more than ~0.5 in per 4 lb gained.</div></div>
+</div>
+
+<div class="card">
+  <h4>Weight over time</h4>
+  <div id="chart" style="overflow-x:auto"></div>
+  <p style="font-size:.82rem;color:var(--text-muted);margin:.5rem 0 0">Dots are individual weigh-ins; the line is the 7-day rolling average.</p>
+</div>
+
+<div class="card">
+  <h4>Recent body-metric entries</h4>
+  <div class="table-wrap" id="w-table" style="margin-bottom:0"></div>
+</div>
+
+<h2 id="workouts">Workout log</h2>
+
+<div class="card">
+  <div class="field-row">
+    <div class="field"><label for="k-date">Date</label><input id="k-date" type="date"></div>
+    <div class="field"><label for="k-session">Session</label><select id="k-session"><option>A · Push</option><option>B · Pull</option><option>C · Legs</option><option>Skill / other</option></select></div>
+    <div class="field"><label for="k-ex">Exercise</label><input id="k-ex" list="exlist" placeholder="e.g. Push-up"><datalist id="exlist">
+      <option>Push-up</option><option>Incline push-up</option><option>Knee push-up</option><option>Decline push-up</option><option>Diamond push-up</option><option>Archer push-up</option>
+      <option>Pike push-up</option><option>Elevated pike push-up</option><option>Wall handstand push-up</option>
+      <option>Pull-up</option><option>Chin-up</option><option>Negative pull-up</option><option>Band-assisted pull-up</option><option>Scapular pull-up</option>
+      <option>Inverted row</option><option>Table row</option><option>Feet-elevated row</option><option>Archer row</option>
+      <option>Bench dip</option><option>Parallel bar dip</option><option>Ring dip</option>
+      <option>Bodyweight squat</option><option>Split squat</option><option>Bulgarian split squat</option><option>Box pistol squat</option><option>Shrimp squat</option><option>Pistol squat</option>
+      <option>Glute bridge</option><option>Single-leg glute bridge</option><option>Sliding leg curl</option><option>Nordic curl negative</option><option>Calf raise</option>
+      <option>Plank</option><option>Hollow hold</option><option>Hollow rock</option><option>Dead bug</option><option>Side plank</option><option>Superman hold</option>
+      <option>Hanging knee raise</option><option>Hanging leg raise</option><option>Lying leg raise</option>
+      <option>L-sit</option><option>Handstand hold</option><option>Dead hang</option><option>Tuck front lever</option>
+    </datalist></div>
+    <div class="field"><label for="k-rung">Rung / variation notes</label><input id="k-rung" placeholder="e.g. feet on chair"></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label for="k-reps">Reps per set — comma separated (or seconds for holds)</label><input id="k-reps" placeholder="8, 8, 7, 6"></div>
+    <div class="field"><label for="k-unit">Unit</label><select id="k-unit"><option value="reps">reps</option><option value="sec">seconds</option></select></div>
+    <div class="field"><label for="k-rir">RIR on last set</label><input id="k-rir" type="number" min="0" max="6" placeholder="2"></div>
+  </div>
+  <div class="field"><label for="k-note">Session note (sleep, energy, anything that hurt)</label><input id="k-note" placeholder="optional"></div>
+  <div class="btn-row" style="margin-bottom:0">
+    <button class="btn" id="k-save" type="button">Log exercise</button>
+    <button class="btn ghost" id="k-clear" type="button">Clear all workouts</button>
+  </div>
+</div>
+
+<div class="grid grid-3">
+  <div class="stat"><div class="k">Sessions this week</div><div class="v" id="s-week">0</div><div class="d">Target: 3</div></div>
+  <div class="stat"><div class="k">Total sessions</div><div class="v" id="s-sessions">0</div><div class="d">Distinct training days logged.</div></div>
+  <div class="stat"><div class="k">Exercises logged</div><div class="v" id="s-entries">0</div><div class="d">Individual exercise entries.</div></div>
+</div>
+
+<div class="card">
+  <h4>Personal bests <span style="font-weight:400;color:var(--text-muted);font-size:.85rem">— best single set for each exercise</span></h4>
+  <div class="table-wrap" id="pb-table" style="margin-bottom:0"></div>
+</div>
+
+<div class="card">
+  <h4>Recent workout entries</h4>
+  <div class="field" style="max-width:320px"><label for="k-filter">Filter by exercise</label><input id="k-filter" placeholder="type to filter"></div>
+  <div class="table-wrap" id="k-table" style="margin-bottom:0"></div>
+</div>
+
+<h2 id="test">Baseline test</h2>
+
+<p>Run this on day one, then again at weeks 9, 12, and 24, and quarterly after that. The <a href="goals.html#baseline">full protocol is here</a> — same order, same rules, 3 minutes rest between tests.</p>
+
+<div class="card">
+  <div class="field" style="max-width:220px"><label for="t-date">Test date</label><input id="t-date" type="date"></div>
+  <div class="field-row" id="t-fields"></div>
+  <div class="btn-row" style="margin-bottom:0">
+    <button class="btn" id="t-save" type="button">Save test</button>
+    <button class="btn ghost" id="t-clear" type="button">Clear all tests</button>
+  </div>
+</div>
+
+<div class="card">
+  <h4>Test history</h4>
+  <div class="table-wrap" id="t-table" style="margin-bottom:0"></div>
+</div>
+
+<h2 id="data">Your data</h2>
+
+<div class="card">
+  <p>Everything is stored locally in this browser under the keys <code>cal-weights</code>, <code>cal-workouts</code>, and <code>cal-tests</code>. Export gives you a single JSON file you can re-import later or on another device.</p>
+  <div class="btn-row" style="margin-bottom:0">
+    <button class="btn" id="d-export" type="button">Export JSON backup</button>
+    <button class="btn ghost" id="d-csv" type="button">Export workouts as CSV</button>
+    <button class="btn ghost" id="d-import" type="button">Import JSON backup</button>
+    <input id="d-file" type="file" accept="application/json" style="display:none">
+  </div>
+</div>
+
+<script>
+(function(){
+  var TESTS=[
+    ['pushups','Max push-ups','reps'],['pullups','Max pull-ups','reps'],['rows','Max inverted rows','reps'],
+    ['dips','Max dips','reps'],['pike','Max pike push-ups','reps'],['squats','Max bodyweight squats','reps'],
+    ['splitL','Split squat L','reps'],['splitR','Split squat R','reps'],['plank','Plank hold','sec'],
+    ['hollow','Hollow hold','sec'],['hang','Dead hang','sec'],['handstand','Wall handstand','sec']
+  ];
+
+  function $(id){return document.getElementById(id);}
+  function load(k){ try{ return JSON.parse(localStorage.getItem(k)||'[]'); }catch(e){ return []; } }
+  function save(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){ alert('Could not save — local storage may be full or disabled.'); } }
+  function today(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function fmt(n,d){ return (Math.round(n*Math.pow(10,d))/Math.pow(10,d)).toFixed(d); }
+
+  /* ---------------- body metrics ---------------- */
+
+  function weights(){ return load('cal-weights').sort(function(a,b){ return a.d<b.d?-1:1; }); }
+
+  function rolling(arr,n){
+    return arr.map(function(_,i){
+      var s=arr.slice(Math.max(0,i-n+1),i+1).filter(function(x){return x.w;});
+      if(!s.length) return null;
+      return s.reduce(function(t,x){return t+x.w;},0)/s.length;
+    });
+  }
+
+  function renderWeights(){
+    var W=weights().filter(function(x){return x.w;});
+    var all=weights();
+    $('s-count').textContent=all.length;
+    if(!W.length){ $('chart').innerHTML='<p style="color:var(--text-muted);font-size:.9rem;margin:0">Log a few weigh-ins and a chart appears here.</p>'; }
+    else {
+      var last=W[W.length-1];
+      $('s-latest').innerHTML=fmt(last.w,1)+' <small>lb</small>';
+      $('s-latest-d').textContent='Logged '+last.d+'.';
+      var roll=rolling(W,7), avg=roll[roll.length-1];
+      $('s-avg').innerHTML=fmt(avg,1)+' <small>lb</small>';
+      var prevIdx=-1;
+      for(var i=W.length-1;i>=0;i--){ if((new Date(last.d)-new Date(W[i].d))/86400000>=7){ prevIdx=i; break; } }
+      if(prevIdx>=0){
+        var days=(new Date(last.d)-new Date(W[prevIdx].d))/86400000;
+        var rate=(avg-roll[prevIdx])/days*7;
+        $('s-trend').innerHTML=(rate>=0?'+':'')+fmt(rate,2)+' <small>lb/wk</small>';
+        $('s-trend-d').textContent = rate>0.6 ? 'Gaining fast — more of this is fat. Cut about 200 kcal/day.'
+          : rate>=0.2 ? 'Right in the lean-bulk zone. Hold your calories steady.'
+          : rate>=-0.05 ? 'Barely moving. Add about 250 kcal/day and recheck in 3 weeks.'
+          : 'Losing weight. If you meant to bulk, you are not eating enough.';
+      } else { $('s-trend').textContent='—'; $('s-trend-d').textContent='Need at least 7 days of weigh-ins.'; }
+      $('s-total').innerHTML=((last.w-W[0].w)>=0?'+':'')+fmt(last.w-W[0].w,1)+' <small>lb</small>';
+      drawChart(W,roll);
+    }
+    var waists=all.filter(function(x){return x.waist;});
+    $('s-waist').innerHTML = waists.length>1 ? ((waists[waists.length-1].waist-waists[0].waist>=0?'+':'')+fmt(waists[waists.length-1].waist-waists[0].waist,2)+' <small>in</small>') : '—';
+
+    var rows=all.slice().reverse().slice(0,20).map(function(e,i){
+      return '<tr><td>'+esc(e.d)+'</td><td class="num">'+(e.w?fmt(e.w,1):'—')+'</td><td class="num">'+(e.waist||'—')+'</td><td class="num">'+(e.arm||'—')+'</td><td class="num">'+(e.chest||'—')+'</td><td class="num">'+(e.thigh||'—')+'</td>'+
+        '<td><button class="btn ghost" style="padding:.15rem .5rem;font-size:.78rem" data-wdel="'+esc(e.d)+'">delete</button></td></tr>';
+    }).join('');
+    $('w-table').innerHTML = all.length
+      ? '<table><thead><tr><th>Date</th><th class="num">Weight</th><th class="num">Waist</th><th class="num">Arm</th><th class="num">Chest</th><th class="num">Thigh</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'
+      : '<p style="color:var(--text-muted);font-size:.9rem;padding:.5rem">Nothing logged yet.</p>';
+    $('w-table').querySelectorAll('[data-wdel]').forEach(function(b){
+      b.addEventListener('click',function(){
+        var d=b.getAttribute('data-wdel');
+        save('cal-weights', load('cal-weights').filter(function(x){return x.d!==d;}));
+        renderWeights();
+      });
+    });
+  }
+
+  function drawChart(W,roll){
+    var w=Math.max(320, Math.min(1000, W.length*14+80)), h=200, pad={l:44,r:12,t:14,b:26};
+    var vals=W.map(function(x){return x.w;}).concat(roll.filter(function(x){return x!==null;}));
+    var min=Math.min.apply(null,vals)-1, max=Math.max.apply(null,vals)+1;
+    if(max-min<3){ var mid=(max+min)/2; min=mid-1.5; max=mid+1.5; }
+    var t0=new Date(W[0].d).getTime(), t1=new Date(W[W.length-1].d).getTime();
+    if(t1===t0) t1=t0+86400000;
+    function X(d){ return pad.l+(new Date(d).getTime()-t0)/(t1-t0)*(w-pad.l-pad.r); }
+    function Y(v){ return pad.t+(1-(v-min)/(max-min))*(h-pad.t-pad.b); }
+    var line=W.map(function(e,i){ return roll[i]===null?null:(i?'L':'M')+fmt(X(e.d),1)+' '+fmt(Y(roll[i]),1); }).filter(Boolean).join(' ');
+    var dots=W.map(function(e){ return '<circle cx="'+fmt(X(e.d),1)+'" cy="'+fmt(Y(e.w),1)+'" r="2.5" fill="var(--text-faint)"/>'; }).join('');
+    var ticks='';
+    for(var k=0;k<=4;k++){
+      var v=min+(max-min)*k/4, y=Y(v);
+      ticks+='<line x1="'+pad.l+'" y1="'+fmt(y,1)+'" x2="'+(w-pad.r)+'" y2="'+fmt(y,1)+'" stroke="var(--border)" stroke-width="1"/>'+
+             '<text x="'+(pad.l-6)+'" y="'+fmt(y+4,1)+'" text-anchor="end" font-size="10" fill="var(--text-muted)">'+fmt(v,0)+'</text>';
+    }
+    $('chart').innerHTML='<svg viewBox="0 0 '+w+' '+h+'" width="'+w+'" height="'+h+'" role="img" aria-label="Bodyweight over time">'+
+      ticks+dots+'<path d="'+line+'" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>'+
+      '<text x="'+pad.l+'" y="'+(h-8)+'" font-size="10" fill="var(--text-muted)">'+W[0].d+'</text>'+
+      '<text x="'+(w-pad.r)+'" y="'+(h-8)+'" font-size="10" text-anchor="end" fill="var(--text-muted)">'+W[W.length-1].d+'</text></svg>';
+  }
+
+  /* ---------------- workouts ---------------- */
+
+  function workouts(){ return load('cal-workouts').sort(function(a,b){ return a.d<b.d?1:-1; }); }
+
+  function renderWorkouts(){
+    var K=workouts(), filter=($('k-filter').value||'').toLowerCase();
+    var days={}; K.forEach(function(e){ days[e.d]=1; });
+    $('s-sessions').textContent=Object.keys(days).length;
+    $('s-entries').textContent=K.length;
+    var weekAgo=new Date(Date.now()-7*86400000);
+    $('s-week').textContent=Object.keys(days).filter(function(d){ return new Date(d)>=weekAgo; }).length;
+
+    var best={};
+    K.forEach(function(e){
+      var m=Math.max.apply(null,(e.sets||[0]));
+      var tot=(e.sets||[]).reduce(function(a,b){return a+b;},0);
+      if(!best[e.ex] || m>best[e.ex].m){ best[e.ex]={m:m,d:e.d,unit:e.unit,rung:e.rung,tot:tot}; }
+    });
+    var bk=Object.keys(best).sort();
+    $('pb-table').innerHTML = bk.length
+      ? '<table><thead><tr><th>Exercise</th><th class="num">Best set</th><th>Variation</th><th class="num">Achieved</th></tr></thead><tbody>'+
+        bk.map(function(k){ return '<tr><td>'+esc(k)+'</td><td class="num"><strong>'+best[k].m+'</strong> '+esc(best[k].unit||'reps')+'</td><td>'+esc(best[k].rung||'—')+'</td><td class="num">'+esc(best[k].d)+'</td></tr>'; }).join('')+'</tbody></table>'
+      : '<p style="color:var(--text-muted);font-size:.9rem;padding:.5rem">Log some sets and your bests appear here.</p>';
+
+    var shown=K.filter(function(e){ return !filter || e.ex.toLowerCase().indexOf(filter)>=0; }).slice(0,60);
+    $('k-table').innerHTML = shown.length
+      ? '<table><thead><tr><th>Date</th><th>Session</th><th>Exercise</th><th>Variation</th><th class="num">Sets</th><th class="num">Total</th><th class="num">RIR</th><th>Note</th><th></th></tr></thead><tbody>'+
+        shown.map(function(e){
+          return '<tr><td class="num">'+esc(e.d)+'</td><td>'+esc(e.session)+'</td><td><strong>'+esc(e.ex)+'</strong></td><td>'+esc(e.rung||'—')+'</td>'+
+            '<td class="num">'+(e.sets||[]).join(' / ')+' '+esc(e.unit||'')+'</td>'+
+            '<td class="num">'+(e.sets||[]).reduce(function(a,b){return a+b;},0)+'</td>'+
+            '<td class="num">'+(e.rir==null||e.rir===''?'—':esc(e.rir))+'</td><td>'+esc(e.note||'')+'</td>'+
+            '<td><button class="btn ghost" style="padding:.15rem .5rem;font-size:.78rem" data-kdel="'+esc(e.id)+'">×</button></td></tr>';
+        }).join('')+'</tbody></table>'
+      : '<p style="color:var(--text-muted);font-size:.9rem;padding:.5rem">No matching entries.</p>';
+    $('k-table').querySelectorAll('[data-kdel]').forEach(function(b){
+      b.addEventListener('click',function(){
+        var id=b.getAttribute('data-kdel');
+        save('cal-workouts', load('cal-workouts').filter(function(x){return String(x.id)!==id;}));
+        renderWorkouts();
+      });
+    });
+  }
+
+  /* ---------------- baseline tests ---------------- */
+
+  function renderTestFields(){
+    $('t-fields').innerHTML=TESTS.map(function(t){
+      return '<div class="field"><label for="t-'+t[0]+'">'+t[1]+' <span style="font-weight:400">('+t[2]+')</span></label><input id="t-'+t[0]+'" type="number" min="0" placeholder="0"></div>';
+    }).join('');
+  }
+
+  function renderTests(){
+    var T=load('cal-tests').sort(function(a,b){ return a.d<b.d?-1:1; });
+    if(!T.length){ $('t-table').innerHTML='<p style="color:var(--text-muted);font-size:.9rem;padding:.5rem">No tests saved yet. Do the baseline test before your first session.</p>'; return; }
+    var head='<tr><th>Test</th>'+T.map(function(t){return '<th class="num">'+esc(t.d)+'</th>';}).join('')+'<th class="num">Change</th></tr>';
+    var body=TESTS.map(function(t){
+      var cells=T.map(function(x){ var v=x.v[t[0]]; return '<td class="num">'+(v==null||v===''?'—':v)+'</td>'; }).join('');
+      var first=T[0].v[t[0]], last=T[T.length-1].v[t[0]], delta='—';
+      if(first!=null&&last!=null&&first!==''&&last!==''){
+        var dd=last-first;
+        delta='<span style="color:'+(dd>0?'var(--good)':dd<0?'var(--stop)':'var(--text-muted)')+';font-weight:650">'+(dd>0?'+':'')+dd+'</span>';
+      }
+      return '<tr><td>'+t[1]+' <span style="color:var(--text-muted);font-size:.8rem">('+t[2]+')</span></td>'+cells+'<td class="num">'+delta+'</td></tr>';
+    }).join('');
+    $('t-table').innerHTML='<table><thead>'+head+'</thead><tbody>'+body+'</tbody></table>';
+  }
+
+  /* ---------------- wiring ---------------- */
+
+  document.addEventListener('DOMContentLoaded',function(){
+    $('w-date').value=today(); $('k-date').value=today(); $('t-date').value=today();
+    renderTestFields(); renderWeights(); renderWorkouts(); renderTests();
+
+    $('w-save').addEventListener('click',function(){
+      var d=$('w-date').value||today();
+      var e={d:d};
+      ['wt','waist','arm','chest','thigh'].forEach(function(f){
+        var v=$('w-'+f).value; if(v!=='') e[f==='wt'?'w':f]=parseFloat(v);
+      });
+      if(e.w==null && e.waist==null && e.arm==null && e.chest==null && e.thigh==null){ alert('Enter at least one measurement.'); return; }
+      var all=load('cal-weights').filter(function(x){return x.d!==d;});
+      all.push(e); save('cal-weights',all);
+      ['wt','waist','arm','chest','thigh'].forEach(function(f){ $('w-'+f).value=''; });
+      renderWeights();
+    });
+
+    $('w-clear').addEventListener('click',function(){
+      if(confirm('Delete ALL body metric entries? This cannot be undone.')){ save('cal-weights',[]); renderWeights(); }
+    });
+
+    $('k-save').addEventListener('click',function(){
+      var ex=($('k-ex').value||'').trim();
+      if(!ex){ alert('Enter an exercise name.'); return; }
+      var sets=($('k-reps').value||'').split(/[,\s]+/).map(function(x){return parseFloat(x);}).filter(function(x){return !isNaN(x);});
+      if(!sets.length){ alert('Enter at least one set, e.g. "8, 8, 7".'); return; }
+      var all=load('cal-workouts');
+      all.push({ id:Date.now()+'-'+Math.random().toString(36).slice(2,7), d:$('k-date').value||today(),
+        session:$('k-session').value, ex:ex, rung:($('k-rung').value||'').trim(),
+        sets:sets, unit:$('k-unit').value, rir:$('k-rir').value, note:($('k-note').value||'').trim() });
+      save('cal-workouts',all);
+      $('k-reps').value=''; $('k-ex').value=''; $('k-rung').value='';
+      renderWorkouts();
+    });
+
+    $('k-clear').addEventListener('click',function(){
+      if(confirm('Delete ALL workout entries? This cannot be undone.')){ save('cal-workouts',[]); renderWorkouts(); }
+    });
+
+    $('k-filter').addEventListener('input',renderWorkouts);
+
+    $('t-save').addEventListener('click',function(){
+      var v={}, any=false;
+      TESTS.forEach(function(t){ var x=$('t-'+t[0]).value; if(x!==''){ v[t[0]]=parseFloat(x); any=true; } });
+      if(!any){ alert('Enter at least one test result.'); return; }
+      var d=$('t-date').value||today();
+      var all=load('cal-tests').filter(function(x){return x.d!==d;});
+      all.push({d:d,v:v}); save('cal-tests',all);
+      TESTS.forEach(function(t){ $('t-'+t[0]).value=''; });
+      renderTests();
+    });
+
+    $('t-clear').addEventListener('click',function(){
+      if(confirm('Delete ALL baseline tests? This cannot be undone.')){ save('cal-tests',[]); renderTests(); }
+    });
+
+    function download(name,content,type){
+      var blob=new Blob([content],{type:type});
+      var a=document.createElement('a');
+      a.href=URL.createObjectURL(blob); a.download=name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+    }
+
+    $('d-export').addEventListener('click',function(){
+      download('calisthenics-backup-'+today()+'.json',
+        JSON.stringify({exported:today(), weights:load('cal-weights'), workouts:load('cal-workouts'), tests:load('cal-tests')},null,2),
+        'application/json');
+    });
+
+    $('d-csv').addEventListener('click',function(){
+      var rows=[['date','session','exercise','variation','sets','unit','rir','note']];
+      workouts().forEach(function(e){
+        rows.push([e.d,e.session,e.ex,e.rung||'',(e.sets||[]).join(' '),e.unit||'',e.rir||'',e.note||'']);
+      });
+      download('calisthenics-workouts-'+today()+'.csv',
+        rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\n'),
+        'text/csv');
+    });
+
+    $('d-import').addEventListener('click',function(){ $('d-file').click(); });
+    $('d-file').addEventListener('change',function(){
+      var f=this.files[0]; if(!f) return;
+      var r=new FileReader();
+      r.onload=function(){
+        try{
+          var data=JSON.parse(r.result);
+          if(!confirm('Replace all current data with the contents of this file?')) return;
+          save('cal-weights',data.weights||[]); save('cal-workouts',data.workouts||[]); save('cal-tests',data.tests||[]);
+          renderWeights(); renderWorkouts(); renderTests();
+          alert('Imported.');
+        }catch(e){ alert('That file could not be read as a valid backup.'); }
+      };
+      r.readAsText(f);
+      this.value='';
+    });
+  });
+})();
+</script>
+
+<div class="next-prev">
+  <a href="gear.html"><span class="k">Previous</span><span class="t">← Gear</span></a>
+  <a href="faq.html"><span class="k">Next</span><span class="t">FAQ &amp; myths →</span></a>
+</div>
+
+</main>
+<footer class="site-footer">
+  <p><strong>This site is educational, not medical advice.</strong> Bodyweight training is low-risk, but you are still loading joints and connective tissue. If you have a pre-existing injury, a heart or joint condition, or you get sharp pain that does not go away, talk to a doctor or a physical therapist before continuing.</p>
+  <p>Built for a 5'9", 150 lb beginner training three days a week, starting from the floor. All units are US customary (lb, in, oz, °F).</p>
+</footer>
+</body>
+</html>

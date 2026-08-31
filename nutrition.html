@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nutrition · Calisthenics Start</title>
+<meta name="description" content="Calories, protein, carbs, fat, a live macro calculator, food lists, sample days, hydration, and supplements for building muscle at 150 lb.">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
+<script src="assets/site.js"></script>
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="index.html">Calisthenics<span>Start</span></a>
+    <nav class="main">
+      <a href="index.html">Start</a>
+      <a href="fundamentals.html">Fundamentals</a>
+      <a href="exercises.html">Exercises</a>
+      <a href="program.html">Program</a>
+      <a href="goals.html">Goals</a>
+      <a href="nutrition.html">Nutrition</a>
+      <a href="recovery.html">Recovery</a>
+      <a href="gear.html">Gear</a>
+      <a href="tracker.html">Tracker</a>
+      <a href="faq.html">FAQ</a>
+    </nav>
+    <button class="theme-toggle" type="button" aria-label="Toggle color theme">☾</button>
+  </div>
+</header>
+<main>
+
+<div class="hero">
+  <p class="eyebrow">Nutrition</p>
+  <h1>You cannot build a body out of nothing</h1>
+  <p class="lede">At 5&#39;9&quot; and 150 lb, undereating is the single most likely thing to stop you. Training is the signal that says &quot;build muscle&quot;; food is the raw material. Get both wrong and nothing happens. Get training right and food wrong, and still almost nothing happens.</p>
+</div>
+
+<div class="toc">
+  <p>On this page</p>
+  <ul>
+    <li><a href="#calculator">Your numbers — calculator</a></li>
+    <li><a href="#rate">Rate of gain</a></li>
+    <li><a href="#protein">Protein</a></li>
+    <li><a href="#carbs">Carbohydrates</a></li>
+    <li><a href="#fat">Fat</a></li>
+    <li><a href="#fiber">Fiber, vegetables, micronutrients</a></li>
+    <li><a href="#foods">Food lists with numbers</a></li>
+    <li><a href="#day">A sample 2,800-calorie day</a></li>
+    <li><a href="#grocery">The grocery list</a></li>
+    <li><a href="#appetite">When you can&#39;t eat that much</a></li>
+    <li><a href="#tracking">How to track without going crazy</a></li>
+    <li><a href="#water">Hydration</a></li>
+    <li><a href="#timing">Meal timing &amp; around workouts</a></li>
+    <li><a href="#supps">Supplements: what works</a></li>
+    <li><a href="#alcohol">Alcohol</a></li>
+    <li><a href="#cut">Bulk or cut?</a></li>
+    <li><a href="#mistakes">Nutrition mistakes</a></li>
+  </ul>
+</div>
+
+<h2 id="calculator">Your numbers</h2>
+
+<p>This uses the Mifflin–St Jeor equation, the most accurate of the common formulas. It is still an <em>estimate</em> — real metabolisms vary by 10–15% either way. The number it gives you is a starting point; the scale over the following three weeks tells you the truth.</p>
+
+<div class="card">
+  <div class="field-row">
+    <div class="field"><label for="n-sex">Sex</label><select id="n-sex"><option value="m">Male</option><option value="f">Female</option></select></div>
+    <div class="field"><label for="n-age">Age</label><input id="n-age" type="number" value="20" min="12" max="90"></div>
+    <div class="field"><label for="n-ft">Height (ft)</label><input id="n-ft" type="number" value="5" min="3" max="7"></div>
+    <div class="field"><label for="n-in">Height (in)</label><input id="n-in" type="number" value="9" min="0" max="11"></div>
+    <div class="field"><label for="n-wt">Weight (lb)</label><input id="n-wt" type="number" value="150" step="0.5"></div>
+  </div>
+  <div class="field-row">
+    <div class="field"><label for="n-act">Daily activity outside training</label>
+      <select id="n-act">
+        <option value="1.2">Sedentary — desk, driving, &lt;4,000 steps</option>
+        <option value="1.375" selected>Light — student/office, some walking, 5–8k steps</option>
+        <option value="1.55">Moderate — on your feet a lot, 8–12k steps</option>
+        <option value="1.725">Heavy — physical job, 12k+ steps</option>
+      </select>
+    </div>
+    <div class="field"><label for="n-goal">Goal</label>
+      <select id="n-goal">
+        <option value="lean" selected>Lean bulk — build muscle, minimal fat</option>
+        <option value="fast">Faster bulk — more muscle, more fat</option>
+        <option value="maint">Maintain — recomposition</option>
+        <option value="cut">Cut — lose fat, keep muscle</option>
+      </select>
+    </div>
+  </div>
+  <div class="grid grid-3" style="margin-bottom:1rem">
+    <div class="stat"><div class="k">BMR</div><div class="v" id="o-bmr">—</div><div class="d">Calories to stay alive in bed all day.</div></div>
+    <div class="stat"><div class="k">Maintenance (TDEE)</div><div class="v" id="o-tdee">—</div><div class="d">Includes your 3 training sessions.</div></div>
+    <div class="stat"><div class="k">Daily target</div><div class="v" id="o-target">—</div><div class="d" id="o-tnote"></div></div>
+  </div>
+  <div class="grid grid-3" style="margin-bottom:0">
+    <div class="stat"><div class="k">Protein</div><div class="v" id="o-p">—</div><div class="d" id="o-pd"></div></div>
+    <div class="stat"><div class="k">Carbohydrate</div><div class="v" id="o-c">—</div><div class="d" id="o-cd"></div></div>
+    <div class="stat"><div class="k">Fat</div><div class="v" id="o-f">—</div><div class="d" id="o-fd"></div></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  function $(id){return document.getElementById(id);}
+  function calc(){
+    var sex=$('n-sex').value, age=+$('n-age').value, wtLb=+$('n-wt').value,
+        hIn=(+$('n-ft').value)*12+(+$('n-in').value), act=+$('n-act').value, goal=$('n-goal').value;
+    if(!wtLb||!hIn||!age) return;
+    var kg=wtLb*0.45359237, cm=hIn*2.54;
+    var bmr=10*kg+6.25*cm-5*age+(sex==='m'?5:-161);
+    var tdee=bmr*act+180; // ~3 sessions/wk averaged across 7 days
+    var target, note, pPerLb, fPct;
+    if(goal==='lean'){ target=tdee*1.12; note='About a 300-calorie surplus. Expect roughly +0.4 lb/week.'; pPerLb=1.0; fPct=.25; }
+    else if(goal==='fast'){ target=tdee*1.20; note='About a 500-calorie surplus. Roughly +0.8 lb/week — faster, but a larger share of it is fat.'; pPerLb=1.0; fPct=.25; }
+    else if(goal==='maint'){ target=tdee; note='Maintenance. Recomposition is possible as a beginner, but slower than bulking.'; pPerLb=1.1; fPct=.27; }
+    else { target=tdee*0.80; note='About a 20% deficit — roughly −1 lb/week. Protein goes up to protect muscle.'; pPerLb=1.2; fPct=.28; }
+    var prot=wtLb*pPerLb, fat=target*fPct/9, carb=(target-prot*4-fat*9)/4;
+    if(carb<50){ carb=50; fat=(target-prot*4-carb*4)/9; }
+    $('o-bmr').innerHTML=Math.round(bmr)+' <small>kcal</small>';
+    $('o-tdee').innerHTML=Math.round(tdee/10)*10+' <small>kcal</small>';
+    $('o-target').innerHTML=Math.round(target/10)*10+' <small>kcal</small>';
+    $('o-tnote').textContent=note;
+    $('o-p').innerHTML=Math.round(prot)+' <small>g</small>';
+    $('o-c').innerHTML=Math.round(carb)+' <small>g</small>';
+    $('o-f').innerHTML=Math.round(fat)+' <small>g</small>';
+    $('o-pd').textContent=pPerLb.toFixed(1)+' g per lb of bodyweight · '+Math.round(prot*4)+' kcal · aim for '+Math.round(prot/4)+' g at each of 4 meals.';
+    $('o-cd').textContent=Math.round(carb*4)+' kcal · fuels training and recovery. The flexible number — adjust this one first.';
+    $('o-fd').textContent=Math.round(fat*9)+' kcal · '+Math.round(fPct*100)+'% of calories. Don’t go below about 0.3 g/lb; hormones need it.';
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    ['n-sex','n-age','n-ft','n-in','n-wt','n-act','n-goal'].forEach(function(i){
+      var e=document.getElementById(i); if(e){e.addEventListener('input',calc); e.addEventListener('change',calc);}
+    });
+    calc();
+  });
+})();
+</script>
+
+<div class="note">
+  <b>The default answer for you.</b> A 20-year-old male at 5&#39;9&quot;, 150 lb, lightly active, on a lean bulk lands at roughly <strong>2,800 calories, 150 g protein, 375 g carbs, 78 g fat</strong>. If you&#39;re older, less active, or female, use the calculator — the differences are large enough to matter.
+</div>
+
+<h2 id="rate">Rate of gain — why slow wins</h2>
+
+<p>You can gain weight as fast as you like. You cannot gain <em>muscle</em> as fast as you like — muscle synthesis has a ceiling of roughly 1–2 lb per month for a well-trained, well-fed beginner. Every pound above that rate is fat.</p>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Rate</th><th>Surplus</th><th>Roughly what you get</th><th>Verdict</th></tr></thead>
+<tbody>
+<tr><td class="num">+0.25 lb/wk</td><td class="num">~150 kcal</td><td>Nearly all muscle, very little fat</td><td>Excellent if you&#39;re patient. Slow enough that a bad tracking week erases it.</td></tr>
+<tr><td class="num">+0.4 lb/wk</td><td class="num">~300 kcal</td><td>~70% muscle, ~30% fat</td><td><strong>The recommendation.</strong> Best ratio of results to fat gain for a beginner.</td></tr>
+<tr><td class="num">+0.75 lb/wk</td><td class="num">~550 kcal</td><td>~50% muscle, ~50% fat</td><td>Acceptable for a few months if you&#39;re very lean and impatient.</td></tr>
+<tr><td class="num">+1.5 lb/wk</td><td class="num">~1,000 kcal</td><td>~25% muscle, ~75% fat</td><td>A &quot;dirty bulk.&quot; You end up 25 lb heavier, mostly fat, with worse pull-ups and a cut ahead of you.</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>Bodyweight matters more in calisthenics than in any other strength sport,</strong> because you are the load. Ten pounds of fat makes every pull-up, dip, handstand, and lever measurably harder — permanently, until you lose it. Ten pounds of muscle makes them easier. That&#39;s the whole argument for the slow lane.</p>
+
+<div class="tip">
+  <b>How to steer.</b> Every Sunday, average your seven morning weigh-ins. Compare to last Sunday&#39;s average. Gaining more than 0.5 lb/week? Cut 200 calories a day. Not gaining after three weeks? Add 250 calories a day. Adjust on three-week trends, never on a single day — daily weight swings 2–4 lb from water and food volume alone.
+</div>
+
+<h2 id="protein">Protein — the number that matters most</h2>
+
+<p>Protein supplies the amino acids your body assembles into new muscle. It is also the most satiating and the most metabolically expensive macronutrient. If you get exactly one thing right in your diet, get this one.</p>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Situation</th><th>Target</th><th>For you at 150 lb</th></tr></thead>
+<tbody>
+<tr><td>Building muscle in a surplus</td><td class="num">0.7–1.0 g per lb</td><td class="num">105–150 g/day</td></tr>
+<tr><td>Cutting (deficit)</td><td class="num">1.0–1.2 g per lb</td><td class="num">150–180 g/day</td></tr>
+<tr><td>Absolute minimum to not lose ground</td><td class="num">0.5 g per lb</td><td class="num">75 g/day</td></tr>
+<tr><td>Point of clearly diminishing returns</td><td class="num">&gt;1.2 g per lb</td><td class="num">&gt;180 g/day — no added benefit</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>Use 150 g as your daily target.</strong> That&#39;s 1 g per pound — comfortably above where the research shows benefits plateau, chosen because it&#39;s easy to remember and gives you margin for the days you undershoot.</p>
+
+<h3>Distribution matters more than timing</h3>
+
+<p>Muscle protein synthesis is stimulated by a dose of protein, and the response peaks around 0.25 g/lb (roughly 30–40 g for you) per meal. Beyond that, extra protein in one sitting mostly gets oxidized rather than doing more building. So:</p>
+
+<ul>
+  <li><strong>Split across 4 meals of ~37 g each</strong> rather than 2 meals of 75 g.</li>
+  <li><strong>Each meal should have an obvious protein source.</strong> If you look at a plate and can&#39;t point at the protein, it isn&#39;t there.</li>
+  <li><strong>Include one before bed</strong> — 30–40 g of casein-rich protein (cottage cheese, Greek yogurt, milk, or a casein shake) supports overnight repair through a 7–9 hour fast.</li>
+  <li><strong>The 30-minute post-workout &quot;anabolic window&quot; is a myth.</strong> The elevated response lasts many hours. Eat within a couple of hours and you&#39;ve captured essentially all of it.</li>
+</ul>
+
+<div class="note">
+  <b>Plant-based?</b> Aim about 20% higher (roughly 1.2 g/lb) because plant proteins are generally lower in leucine and less digestible, and combine sources across the day — legumes plus grains, soy, seitan, plus a pea/rice protein blend. Soy and pea protein isolate are the two plant proteins that hold up best in muscle-building research.
+</div>
+
+<h2 id="carbs">Carbohydrates — your training fuel</h2>
+
+<p>Carbs are stored in muscle as glycogen, which is the primary fuel for the kind of hard, repeated sets you&#39;re doing. Low-carb training feels flat, reduces the reps you can grind out, and makes recovery worse. They are also, for most people, the easiest way to actually hit a calorie surplus.</p>
+
+<ul>
+  <li><strong>Target: 3–5 g per lb of bodyweight when bulking</strong> — 340–450 g at 150 lb. The calculator lands you around 375 g.</li>
+  <li><strong>Base most of it on minimally processed sources:</strong> rice, oats, potatoes, pasta, bread, fruit, beans. These come with fiber and micronutrients.</li>
+  <li><strong>Fast-digesting carbs around training</strong> (fruit, white rice, a bagel) are useful but not essential. Total daily intake matters far more.</li>
+  <li><strong>Carbs are not fattening.</strong> A calorie surplus is fattening. Carbs are simply the most common source of one.</li>
+</ul>
+
+<h2 id="fat">Fat — the one you shouldn&#39;t cut too low</h2>
+
+<p>Dietary fat is required for hormone production (including testosterone), absorption of vitamins A, D, E and K, and cell membrane structure. Very low-fat diets measurably lower testosterone, which is exactly backwards for someone trying to build muscle.</p>
+
+<ul>
+  <li><strong>Target: 20–30% of calories</strong>, and never below <strong>0.3 g per lb</strong> (45 g at 150 lb). The calculator gives you ~78 g.</li>
+  <li><strong>Prioritize:</strong> olive oil, avocado, nuts, seeds, fatty fish (salmon, sardines, mackerel), whole eggs.</li>
+  <li><strong>Get omega-3s.</strong> Two servings of fatty fish per week, or a supplement. Anti-inflammatory, good for joints and recovery, and most people eat far too little.</li>
+  <li><strong>Fat is calorie-dense (9 kcal/g vs 4 for protein and carbs),</strong> which makes it your best tool if you struggle to eat enough — see <a href="#appetite">below</a>.</li>
+</ul>
+
+<h2 id="fiber">Fiber, vegetables, and micronutrients</h2>
+
+<p>Not glamorous, but deficiencies here quietly wreck recovery, sleep, and energy.</p>
+
+<ul>
+  <li><strong>Fiber: 25–35 g/day.</strong> Digestion, satiety, cholesterol, blood sugar. From beans, oats, fruit, vegetables, and whole grains.</li>
+  <li><strong>Vegetables and fruit: aim for 5+ servings a day</strong>, and vary the colors — different pigments mean different micronutrients.</li>
+  <li><strong>Vitamin D</strong> — most people in the US are low, especially in winter or with darker skin. Low vitamin D is linked to reduced strength and worse recovery. 1,000–2,000 IU/day is a cheap insurance policy.</li>
+  <li><strong>Calcium (1,000 mg) and magnesium (400 mg)</strong> — muscle contraction, bone density, sleep quality. Dairy, leafy greens, nuts, seeds.</li>
+  <li><strong>Iron and zinc</strong> — energy and immune function. Red meat, beans, shellfish. Vegetarians should pay attention here.</li>
+  <li><strong>Sodium.</strong> Do not fear salt if you train and sweat. It matters for performance and blood volume. Just get most of it from food you cooked rather than from ultra-processed products.</li>
+</ul>
+
+<h2 id="foods">Food lists with the actual numbers</h2>
+
+<h3>Protein sources</h3>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Food</th><th>Serving</th><th class="num">Protein</th><th class="num">Calories</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Chicken breast</td><td>6 oz cooked</td><td class="num">54 g</td><td class="num">280</td><td>Best protein-per-calorie ratio in the aisle.</td></tr>
+<tr><td>Chicken thigh</td><td>6 oz cooked</td><td class="num">44 g</td><td class="num">370</td><td>Cheaper, better flavor, harder to overcook.</td></tr>
+<tr><td>Ground beef, 93/7</td><td>6 oz cooked</td><td class="num">46 g</td><td class="num">330</td><td>Iron, zinc, creatine.</td></tr>
+<tr><td>Ground turkey, 93/7</td><td>6 oz cooked</td><td class="num">45 g</td><td class="num">310</td><td>Interchangeable with beef.</td></tr>
+<tr><td>Salmon</td><td>6 oz cooked</td><td class="num">40 g</td><td class="num">370</td><td>Omega-3s. Worth 2×/week.</td></tr>
+<tr><td>Canned tuna, in water</td><td>1 can (5 oz)</td><td class="num">27 g</td><td class="num">120</td><td>Cheapest lean protein there is. Cap at ~3 cans/week for mercury.</td></tr>
+<tr><td>Canned sardines</td><td>1 can (3.75 oz)</td><td class="num">22 g</td><td class="num">190</td><td>Omega-3s, calcium, vitamin D. Very cheap.</td></tr>
+<tr><td>Eggs</td><td>3 large</td><td class="num">19 g</td><td class="num">215</td><td>Eat the yolks — that&#39;s where the micronutrients are.</td></tr>
+<tr><td>Egg whites</td><td>1 cup</td><td class="num">26 g</td><td class="num">125</td><td>Pure protein when you need it without calories.</td></tr>
+<tr><td>Greek yogurt, nonfat</td><td>1 cup (8 oz)</td><td class="num">23 g</td><td class="num">130</td><td>Great before bed. Buy plain and add your own fruit.</td></tr>
+<tr><td>Cottage cheese, 2%</td><td>1 cup</td><td class="num">24 g</td><td class="num">180</td><td>Slow-digesting casein. The classic pre-bed food.</td></tr>
+<tr><td>Whole milk</td><td>16 oz</td><td class="num">16 g</td><td class="num">300</td><td>The easiest 300 calories you will ever consume.</td></tr>
+<tr><td>Whey protein powder</td><td>1 scoop (~30 g)</td><td class="num">24 g</td><td class="num">120</td><td>Convenience, not magic. Useful for hitting the target.</td></tr>
+<tr><td>Tofu, firm</td><td>6 oz</td><td class="num">17 g</td><td class="num">180</td><td>Complete plant protein.</td></tr>
+<tr><td>Tempeh</td><td>4 oz</td><td class="num">21 g</td><td class="num">220</td><td>Higher protein than tofu, nuttier.</td></tr>
+<tr><td>Lentils, cooked</td><td>1 cup</td><td class="num">18 g</td><td class="num">230</td><td>Protein + 16 g fiber. Extremely cheap.</td></tr>
+<tr><td>Black beans, cooked</td><td>1 cup</td><td class="num">15 g</td><td class="num">225</td><td>Same deal.</td></tr>
+<tr><td>Edamame</td><td>1 cup shelled</td><td class="num">18 g</td><td class="num">190</td><td>Best plant protein snack.</td></tr>
+<tr><td>Shrimp</td><td>6 oz cooked</td><td class="num">36 g</td><td class="num">170</td><td>Very lean, cooks in 3 minutes.</td></tr>
+<tr><td>Pork loin</td><td>6 oz cooked</td><td class="num">46 g</td><td class="num">310</td><td>Underrated and usually cheap.</td></tr>
+<tr><td>String cheese</td><td>2 sticks</td><td class="num">14 g</td><td class="num">160</td><td>Portable, no prep.</td></tr>
+<tr><td>Beef jerky</td><td>2 oz</td><td class="num">22 g</td><td class="num">180</td><td>Expensive per gram, but travels anywhere.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Carbohydrate sources</h3>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Food</th><th>Serving</th><th class="num">Carbs</th><th class="num">Calories</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>White rice, cooked</td><td>1 cup</td><td class="num">45 g</td><td class="num">205</td><td>Easy to digest, easy to eat a lot of. Bulking staple.</td></tr>
+<tr><td>Brown rice, cooked</td><td>1 cup</td><td class="num">45 g</td><td class="num">215</td><td>More fiber, more filling — which can work against you when bulking.</td></tr>
+<tr><td>Oats, dry</td><td>1 cup</td><td class="num">54 g</td><td class="num">305</td><td>Fiber, cheap, blends into shakes.</td></tr>
+<tr><td>Pasta, cooked</td><td>2 cups</td><td class="num">86 g</td><td class="num">440</td><td>Easiest large carb load in existence.</td></tr>
+<tr><td>Potato, baked</td><td>1 large (10 oz)</td><td class="num">64 g</td><td class="num">280</td><td>Potassium, vitamin C, very satiating.</td></tr>
+<tr><td>Sweet potato</td><td>1 large</td><td class="num">37 g</td><td class="num">160</td><td>Vitamin A. Not meaningfully &quot;better&quot; than a white potato.</td></tr>
+<tr><td>Whole wheat bread</td><td>2 slices</td><td class="num">28 g</td><td class="num">160</td><td>Convenience.</td></tr>
+<tr><td>Bagel</td><td>1 large</td><td class="num">55 g</td><td class="num">290</td><td>Dense carbs with almost no fullness cost.</td></tr>
+<tr><td>Banana</td><td>1 medium</td><td class="num">27 g</td><td class="num">105</td><td>Portable pre-workout carb.</td></tr>
+<tr><td>Tortillas, flour</td><td>2 large</td><td class="num">50 g</td><td class="num">300</td><td>Turns anything into a meal.</td></tr>
+<tr><td>Granola</td><td>1/2 cup</td><td class="num">37 g</td><td class="num">250</td><td>Calorie-dense. Easy to accidentally eat 800 calories of.</td></tr>
+<tr><td>Dried fruit (dates, raisins)</td><td>1/4 cup</td><td class="num">30 g</td><td class="num">120</td><td>Concentrated calories in a tiny volume.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>Fat sources</h3>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Food</th><th>Serving</th><th class="num">Fat</th><th class="num">Calories</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td>Peanut butter</td><td>2 tbsp</td><td class="num">16 g</td><td class="num">190</td><td>8 g protein too. The bulking beginner&#39;s best friend.</td></tr>
+<tr><td>Olive oil</td><td>1 tbsp</td><td class="num">14 g</td><td class="num">120</td><td>Drizzle on anything to add 120 calories invisibly.</td></tr>
+<tr><td>Almonds</td><td>1 oz (23 nuts)</td><td class="num">14 g</td><td class="num">165</td><td>Vitamin E, magnesium.</td></tr>
+<tr><td>Walnuts</td><td>1 oz</td><td class="num">18 g</td><td class="num">185</td><td>Best nut for omega-3s.</td></tr>
+<tr><td>Avocado</td><td>1 medium</td><td class="num">22 g</td><td class="num">240</td><td>Potassium and fiber.</td></tr>
+<tr><td>Cheddar cheese</td><td>2 oz</td><td class="num">19 g</td><td class="num">230</td><td>Also 14 g protein.</td></tr>
+<tr><td>Chia / flax seeds</td><td>2 tbsp</td><td class="num">9 g</td><td class="num">140</td><td>Omega-3s and a lot of fiber.</td></tr>
+<tr><td>Whole eggs</td><td>3 large</td><td class="num">15 g</td><td class="num">215</td><td>Choline, vitamin D, and the yolk&#39;s micronutrients.</td></tr>
+</tbody>
+</table>
+</div>
+
+<h2 id="day">A sample 2,800-calorie day</h2>
+
+<p>Roughly 150 g protein, 375 g carbs, 78 g fat. Treat it as a template, not a prescription — the point is to see what those numbers look like on actual plates.</p>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Meal</th><th>Food</th><th class="num">Cal</th><th class="num">P</th><th class="num">C</th><th class="num">F</th></tr></thead>
+<tbody>
+<tr><td rowspan="4"><strong>Breakfast</strong><br><span style="color:var(--text-muted);font-size:.85rem">~7:30 am</span></td><td>1 cup dry oats cooked in 8 oz whole milk</td><td class="num">455</td><td class="num">19</td><td class="num">66</td><td class="num">13</td></tr>
+<tr><td>1 banana, sliced in</td><td class="num">105</td><td class="num">1</td><td class="num">27</td><td class="num">0</td></tr>
+<tr><td>2 tbsp peanut butter stirred in</td><td class="num">190</td><td class="num">8</td><td class="num">7</td><td class="num">16</td></tr>
+<tr><td>3 whole eggs, scrambled</td><td class="num">215</td><td class="num">19</td><td class="num">1</td><td class="num">15</td></tr>
+<tr><td rowspan="4"><strong>Lunch</strong><br><span style="color:var(--text-muted);font-size:.85rem">~12:30 pm</span></td><td>6 oz chicken breast</td><td class="num">280</td><td class="num">54</td><td class="num">0</td><td class="num">6</td></tr>
+<tr><td>1.5 cups white rice</td><td class="num">310</td><td class="num">6</td><td class="num">67</td><td class="num">1</td></tr>
+<tr><td>1 cup black beans</td><td class="num">225</td><td class="num">15</td><td class="num">40</td><td class="num">1</td></tr>
+<tr><td>Mixed vegetables + 1 tbsp olive oil</td><td class="num">170</td><td class="num">3</td><td class="num">10</td><td class="num">14</td></tr>
+<tr><td><strong>Pre-workout</strong><br><span style="color:var(--text-muted);font-size:.85rem">~4:30 pm</span></td><td>Greek yogurt (1 cup) + honey + berries</td><td class="num">250</td><td class="num">24</td><td class="num">35</td><td class="num">1</td></tr>
+<tr><td rowspan="3"><strong>Dinner</strong><br><span style="color:var(--text-muted);font-size:.85rem">~7:30 pm</span></td><td>6 oz ground beef 93/7</td><td class="num">330</td><td class="num">46</td><td class="num">0</td><td class="num">15</td></tr>
+<tr><td>2 cups pasta with tomato sauce</td><td class="num">490</td><td class="num">17</td><td class="num">95</td><td class="num">4</td></tr>
+<tr><td>Side salad + olive oil</td><td class="num">130</td><td class="num">2</td><td class="num">6</td><td class="num">11</td></tr>
+<tr><td><strong>Before bed</strong><br><span style="color:var(--text-muted);font-size:.85rem">~10:30 pm</span></td><td>1 cup cottage cheese + handful of almonds</td><td class="num">280</td><td class="num">30</td><td class="num">10</td><td class="num">14</td></tr>
+<tr style="font-weight:700;background:var(--bg-sunken)"><td colspan="2">Total</td><td class="num">3,430</td><td class="num">244</td><td class="num">364</td><td class="num">111</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="note">
+  <b>Yes, that adds up higher than the target — on purpose.</b> That&#39;s what a genuinely full day looks like, and it shows you where the slack is. To land at 2,800 kcal and 150 g protein, drop the pre-workout yogurt, halve the pasta, and use 4 oz of beef instead of 6. Seeing both versions teaches you portion sizes far better than a single &quot;perfect&quot; day would.
+</div>
+
+<h3>Budget version (~$8/day)</h3>
+<p>Oats, eggs, and milk for breakfast. Lunch: rice, lentils, canned tuna, frozen vegetables. Snack: peanut butter sandwich. Dinner: chicken thighs (cheaper than breast), potatoes, frozen broccoli. Before bed: whole milk. Buy rice, oats, and beans in the largest bag available; buy chicken thighs and ground beef in family packs and freeze in portions; buy frozen vegetables, which are cheaper, last forever, and are nutritionally equivalent to fresh.</p>
+
+<h3>Vegetarian version</h3>
+<p>Breakfast: oats with milk, peanut butter, whey. Lunch: lentil and rice bowl with feta and olive oil. Snack: Greek yogurt with granola. Dinner: tofu or tempeh stir-fry with rice and edamame. Before bed: cottage cheese. Add a pea/rice protein blend to close the gap, and aim about 20% higher on total protein.</p>
+
+<h2 id="grocery">The standing grocery list</h2>
+
+<div class="grid">
+  <div class="card"><h4>Protein</h4><ul style="margin-bottom:0;font-size:.93rem"><li>Chicken thighs or breast (family pack)</li><li>Ground beef or turkey, 93/7</li><li>Eggs (18 ct)</li><li>Greek yogurt, plain, large tub</li><li>Cottage cheese</li><li>Canned tuna and sardines</li><li>Whole milk (1 gal)</li><li>Whey protein (optional)</li><li>Dried lentils and black beans</li></ul></div>
+  <div class="card"><h4>Carbs</h4><ul style="margin-bottom:0;font-size:.93rem"><li>Rice, large bag</li><li>Rolled oats, large container</li><li>Pasta</li><li>Potatoes and sweet potatoes</li><li>Bread or tortillas</li><li>Bananas, apples, oranges</li><li>Frozen berries</li></ul></div>
+  <div class="card"><h4>Fat</h4><ul style="margin-bottom:0;font-size:.93rem"><li>Peanut butter (natural)</li><li>Olive oil</li><li>Almonds or mixed nuts</li><li>Avocados</li><li>Cheese</li></ul></div>
+  <div class="card"><h4>Produce &amp; extras</h4><ul style="margin-bottom:0;font-size:.93rem"><li>Frozen mixed vegetables (multiple bags)</li><li>Onions, garlic, peppers</li><li>Spinach or salad greens</li><li>Canned tomatoes / pasta sauce</li><li>Salt, pepper, spices, hot sauce</li><li>Honey or maple syrup</li></ul></div>
+</div>
+
+<h2 id="appetite">When you genuinely can&#39;t eat that much</h2>
+
+<p>If you have been 150 lb your whole life, 2,800 calories will feel like a lot at first. This is normal and it is a solvable engineering problem: <strong>reduce the volume of food, not the calories.</strong></p>
+
+<ul>
+  <li><strong>Drink calories.</strong> Whole milk, juice, and smoothies bypass fullness almost entirely. A shake of 8 oz milk + 1 cup oats + 2 tbsp peanut butter + 1 banana + 1 scoop whey ≈ <strong>800 calories and 45 g protein</strong> in three minutes.</li>
+  <li><strong>Add fat invisibly.</strong> A tablespoon of olive oil on rice, an extra spoon of peanut butter, cheese on everything. 100–150 calories at a time with no added bulk.</li>
+  <li><strong>Choose the less filling version.</strong> White rice over brown, juice over whole fruit, dried fruit over fresh. Fiber is important, but you don&#39;t need it from every single source.</li>
+  <li><strong>Eat more often, not more per sitting.</strong> Five meals of 560 calories is far easier than three of 930.</li>
+  <li><strong>Don&#39;t fill up on vegetables at the start of a meal</strong> while bulking. Eat the calorie-dense food first, vegetables after.</li>
+  <li><strong>Ramp up.</strong> Add 200 calories a week rather than jumping from 2,000 to 2,800 overnight. Appetite genuinely adapts within a few weeks — hunger hormones adjust.</li>
+  <li><strong>Cut back on cardio</strong> if you&#39;re doing a lot. Every mile run is ~100 calories you now have to eat back.</li>
+</ul>
+
+<h2 id="tracking">How to track without going crazy</h2>
+
+<p>You don&#39;t need to weigh food forever. You need to do it accurately for a few weeks so that your eyeball estimates become good, then spot-check.</p>
+
+<ol>
+  <li><strong>Weeks 1–2:</strong> log everything in a food app (MyFitnessPal, Cronometer, MacroFactor, or a spreadsheet). Use a $12 kitchen scale. Weigh everything. This is tedious and it&#39;s a one-time education.</li>
+  <li><strong>Weeks 3–4:</strong> keep logging but estimate the small stuff. You&#39;ll now know that &quot;a chicken breast&quot; is 6 oz and a &quot;handful of nuts&quot; is 1 oz.</li>
+  <li><strong>After week 4:</strong> track protein and total calories only, and only on weekdays. Or build 4–5 standard meals you know the numbers for and rotate them.</li>
+  <li><strong>Forever:</strong> if the scale stops moving in the direction you want for three weeks, go back to strict tracking for one week to find out what drifted. It&#39;s almost always portion creep.</li>
+</ol>
+
+<div class="warn-box">
+  <b>Two common tracking errors.</b> First, forgetting to log cooking oil, sauces, and drinks — that&#39;s routinely 300–500 hidden calories a day. Second, logging weekdays but not weekends: two big social days can erase an entire week&#39;s deficit or surplus. Log the weekend too, at least at first.
+</div>
+
+<h2 id="water">Hydration</h2>
+
+<ul>
+  <li><strong>Baseline: about half your bodyweight in ounces</strong> — 75 oz (a bit over 2 quarts) at 150 lb. Add 16–24 oz per hour of training.</li>
+  <li><strong>Check your urine.</strong> Pale straw is right. Clear means you&#39;re overdoing it; dark yellow means catch up.</li>
+  <li><strong>Even 2% dehydration measurably reduces strength and endurance</strong> and makes training feel much harder than it should.</li>
+  <li>Coffee and tea count toward your total; the diuretic effect is far smaller than the water they contain.</li>
+  <li>Sports drinks are unnecessary for 60-minute sessions. Water and normal salty food cover it.</li>
+</ul>
+
+<h2 id="timing">Meal timing and eating around workouts</h2>
+
+<p>Total daily intake accounts for the vast majority of the result. Timing is a small refinement, worth getting roughly right and not worth stressing about.</p>
+
+<ul>
+  <li><strong>Pre-workout (1–3 hours before):</strong> a normal meal with carbs and protein. If you train early and can&#39;t stomach a meal, a banana and a scoop of whey 30 minutes out is plenty.</li>
+  <li><strong>Don&#39;t train stuffed.</strong> A large meal within 30–60 minutes of training makes inverted rows, leg raises, and anything upside-down genuinely unpleasant.</li>
+  <li><strong>Post-workout:</strong> eat within a couple of hours. Protein plus carbs. The urgency is far lower than the supplement industry implies.</li>
+  <li><strong>Before bed:</strong> 30–40 g of slow protein. Cottage cheese, Greek yogurt, milk, or casein.</li>
+  <li><strong>Training fasted</strong> is fine if you prefer it and it doesn&#39;t tank your performance — but there&#39;s no advantage to it when the goal is building muscle, and there is a modest downside in training quality.</li>
+</ul>
+
+<h2 id="supps">Supplements: the short honest list</h2>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Supplement</th><th>Verdict</th><th>Dose</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td><strong>Creatine monohydrate</strong></td><td style="color:var(--good);font-weight:650">Worth it</td><td>5 g/day, any time, every day</td><td>The most researched sports supplement in existence, and one of very few that reliably works. Expect a few extra reps per set and a couple of pounds of water inside the muscle. No loading phase needed. Buy plain monohydrate — the fancy forms are marketing.</td></tr>
+<tr><td><strong>Whey / plant protein powder</strong></td><td style="color:var(--good);font-weight:650">Useful</td><td>1–2 scoops as needed</td><td>Food in powder form. It does nothing special; it just makes hitting 150 g easy. Skip it if you already hit your protein from food.</td></tr>
+<tr><td><strong>Vitamin D3</strong></td><td style="color:var(--good);font-weight:650">Probably</td><td>1,000–2,000 IU/day</td><td>Widespread deficiency, cheap, and low D is associated with worse strength and recovery. Get tested if you can.</td></tr>
+<tr><td><strong>Caffeine</strong></td><td style="color:var(--good);font-weight:650">Works</td><td>100–200 mg, 30–60 min pre</td><td>Genuinely improves training performance and perceived effort. Don&#39;t take it within 8 hours of bed — the sleep cost will outweigh the benefit.</td></tr>
+<tr><td><strong>Omega-3 (fish oil)</strong></td><td style="color:var(--warn);font-weight:650">If you don&#39;t eat fish</td><td>1–2 g EPA+DHA/day</td><td>Joint and general health rather than direct muscle gain.</td></tr>
+<tr><td><strong>Multivitamin</strong></td><td style="color:var(--warn);font-weight:650">Cheap insurance</td><td>1/day</td><td>Not a substitute for vegetables. Useful if your diet is narrow.</td></tr>
+<tr><td><strong>BCAAs / EAAs</strong></td><td style="color:var(--stop);font-weight:650">Skip</td><td>—</td><td>Pointless if you eat adequate protein. You already have all the amino acids.</td></tr>
+<tr><td><strong>Testosterone boosters</strong></td><td style="color:var(--stop);font-weight:650">Skip</td><td>—</td><td>Do not work in anyone with normal testosterone. Pure marketing.</td></tr>
+<tr><td><strong>Mass gainers</strong></td><td style="color:var(--stop);font-weight:650">Skip</td><td>—</td><td>Expensive sugar and cheap protein. Blend your own with oats, milk, and peanut butter for a third of the price.</td></tr>
+<tr><td><strong>Fat burners</strong></td><td style="color:var(--stop);font-weight:650">Skip</td><td>—</td><td>Caffeine plus fillers, at 20× the price of caffeine.</td></tr>
+<tr><td><strong>Glutamine, HMB, tribulus, ZMA</strong></td><td style="color:var(--stop);font-weight:650">Skip</td><td>—</td><td>No meaningful effect in healthy, well-fed trainees.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="note">
+  <b>The honest ranking.</b> Sleep &gt; total calories &gt; total protein &gt; training consistency &gt;&gt;&gt; creatine &gt;&gt; everything else. If you spend money on supplements before you have the first four handled, you are buying a rounding error.
+</div>
+
+<h2 id="alcohol">Alcohol</h2>
+
+<p>Not a moral question — a mechanical one. Alcohol suppresses muscle protein synthesis for roughly 24 hours after a meaningful dose, badly disrupts deep sleep even when you fall asleep faster, contributes 7 empty calories per gram, and reduces the quality of the next day&#39;s training. A drink or two occasionally will not undo your progress. Regular heavy drinking will substantially slow it, mostly through the sleep pathway. If you drink, keep it away from training days and don&#39;t make it a habit on the night before a session.</p>
+
+<h2 id="cut">Should you bulk or cut?</h2>
+
+<p>At 5&#39;9&quot; and 150 lb with a BMI of 22 and little muscle, this is an easy call: <strong>bulk.</strong> You are lean enough that you have plenty of room, and cutting from here would leave you skinny rather than defined — &quot;skinny fat&quot; is fixed by building muscle, never by losing more weight.</p>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>If you are…</th><th>Do this</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>Under ~12% body fat (male) / ~22% (female)</td><td>Lean bulk</td><td>Maximum room to build before fat becomes a problem.</td></tr>
+<tr><td>12–18% (male) / 22–28% (female)</td><td>Lean bulk, or recomp at maintenance</td><td>Both work. As a total beginner you can gain muscle and lose fat simultaneously at maintenance — a window that closes after the first year or so.</td></tr>
+<tr><td>Above ~20% (male) / ~30% (female)</td><td>Cut first, for 8–16 weeks</td><td>Nutrient partitioning is better when leaner, and lower bodyweight makes every calisthenics movement easier.</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>When to stop bulking:</strong> when your waist has grown more than about 2 inches, when you&#39;ve reached roughly 18% body fat, or when pull-ups have clearly gotten harder from the added weight. Then run an 8–12 week cut at a 20% deficit with protein at 1.2 g/lb, keep training the same, and come back leaner and bigger than you started.</p>
+
+<h2 id="mistakes">Nutrition mistakes that cost the most</h2>
+
+<div class="table-wrap">
+<table>
+<thead><tr><th>Mistake</th><th>Why it hurts</th></tr></thead>
+<tbody>
+<tr><td><strong>Thinking you eat a lot when you don&#39;t</strong></td><td>The universal skinny-beginner error. If your weight isn&#39;t going up, you are not in a surplus — no matter how full you feel. The scale doesn&#39;t negotiate.</td></tr>
+<tr><td><strong>Chasing &quot;clean&quot; eating instead of enough eating</strong></td><td>Chicken, broccoli, and rice is very filling and very hard to eat 2,800 calories of. Food quality matters; food quantity matters more when the goal is growth.</td></tr>
+<tr><td><strong>Dirty bulking</strong></td><td>Gaining 1.5 lb a week gets you fat, makes pull-ups worse, and buys a long cut later.</td></tr>
+<tr><td><strong>Skipping breakfast then trying to catch up</strong></td><td>Hard to eat 2,800 calories in two meals. Poor protein distribution too.</td></tr>
+<tr><td><strong>Drinking calories you didn&#39;t count</strong></td><td>Soda, juice, and coffee drinks are easily 400–600 calories a day, invisibly.</td></tr>
+<tr><td><strong>Chronically low fat</strong></td><td>Wrecks hormones, absorption, and mood. Never below 0.3 g/lb.</td></tr>
+<tr><td><strong>Cutting carbs while trying to build</strong></td><td>Flat training, worse recovery, fewer reps. Carbs are the fuel for exactly the work you&#39;re doing.</td></tr>
+<tr><td><strong>Changing calories every week</strong></td><td>You can&#39;t read a trend through the noise. Give any change three weeks.</td></tr>
+<tr><td><strong>Buying supplements before fixing food</strong></td><td>You cannot supplement your way out of eating 1,900 calories a day.</td></tr>
+<tr><td><strong>Weighing yourself once and panicking</strong></td><td>Daily weight swings 2–4 lb from water, salt, and gut contents. Only the 7-day average is real.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="next-prev">
+  <a href="goals.html"><span class="k">Previous</span><span class="t">← Goals &amp; metrics</span></a>
+  <a href="recovery.html"><span class="k">Next</span><span class="t">Recovery &amp; injury →</span></a>
+</div>
+
+</main>
+<footer class="site-footer">
+  <p><strong>This site is educational, not medical advice.</strong> Bodyweight training is low-risk, but you are still loading joints and connective tissue. If you have a pre-existing injury, a heart or joint condition, or you get sharp pain that does not go away, talk to a doctor or a physical therapist before continuing.</p>
+  <p>Built for a 5'9", 150 lb beginner training three days a week, starting from the floor. All units are US customary (lb, in, oz, °F).</p>
+</footer>
+</body>
+</html>
