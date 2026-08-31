@@ -1,0 +1,155 @@
+<main class="wide" id="content">
+
+<style>
+  .card-sheet { border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--bg-raised); padding: 1.1rem 1.2rem; margin-bottom: 1.1rem; }
+  .card-sheet h3 { margin: 0 0 .1rem; font-size: 1.08rem; }
+  .card-sheet .ph { font-size: .74rem; text-transform: uppercase; letter-spacing: .09em; color: var(--accent); font-weight: 700; }
+  .card-sheet table { width: 100%; border-collapse: collapse; font-size: .86rem; margin-top: .7rem; }
+  .card-sheet th { text-align: left; font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); border-bottom: 1px solid var(--border); padding: .3rem .4rem; }
+  .card-sheet td { padding: .38rem .4rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .card-sheet td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .boxes { display: inline-flex; gap: .25rem; }
+  .boxes i { display: inline-block; width: 1.5rem; height: 1.1rem; border: 1px solid var(--border-strong); border-radius: 3px; }
+  .cal-table td.wk { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .cal-table td.box { text-align: center; }
+  .cal-table td.box span { display: inline-block; width: 1.3rem; height: 1.3rem; border: 1px solid var(--border-strong); border-radius: 3px; }
+  .cal-table tr.deload { background: var(--warn-soft); }
+  .cal-table .note-cell { min-width: 8rem; }
+
+  @media print {
+    .site-header, .site-footer, .next-prev, .no-print, .scroll-progress, .skip-link { display: none !important; }
+    main { max-width: none !important; padding: 0 !important; }
+    body { font-size: 10pt; background: #fff; color: #000; }
+    .card-sheet { break-inside: avoid; page-break-inside: avoid; border: 1px solid #999; box-shadow: none; background: #fff; margin-bottom: .5rem; }
+    .card-sheet h2, h2 { page-break-after: avoid; }
+    .boxes i, .cal-table td.box span { border-color: #666; }
+    a { text-decoration: none; color: #000; }
+    .hero { border: none; padding: 0 0 .5rem; margin-bottom: .5rem; }
+    .print-break { page-break-before: always; }
+  }
+</style>
+
+<div class="hero">
+  <p class="eyebrow">Printable</p>
+  <h1>Session cards &amp; wall calendar</h1>
+  <p class="lede">Paper versions of all nine sessions and a 24-week calendar to cross off. Useful when your phone is across the room, when you&#39;re training outside in the cold, or when you just want the tally on the wall where you can see it.</p>
+</div>
+
+<div class="no-print">
+  <div class="note">
+    <b>These use your saved rungs.</b> If you&#39;ve run the <a href="rungs.html">rung finder</a>, the cards name the exact variation you should be doing. Otherwise they show the beginner defaults. Rep ranges and rest come straight from <a href="program.html">the program</a>, so a card and the site can never drift apart.
+  </div>
+  <div class="btn-row">
+    <button class="btn" type="button" id="btn-print">Print / save as PDF</button>
+    <span class="seg" role="group" aria-label="Which phase to show">
+      <button type="button" data-phase="0" aria-pressed="true">Onramp</button>
+      <button type="button" data-phase="1" aria-pressed="false">Foundation</button>
+      <button type="button" data-phase="2" aria-pressed="false">Build</button>
+      <button type="button" data-phase="all" aria-pressed="false">All nine</button>
+    </span>
+  </div>
+  <p style="font-size:.87rem;color:var(--text-muted)">Printing tip: choose <strong>landscape</strong> for the calendar and <strong>portrait</strong> for the cards, and turn off headers and footers in the print dialog.</p>
+</div>
+
+<div id="cards"></div>
+
+<h2 class="print-break">24-week calendar</h2>
+<p class="no-print" style="font-size:.9rem;color:var(--text-muted)">One row per week, one box per session. Cross a box off when it&#39;s done. Shaded rows are <a href="program.html#deload">deload weeks</a> — half the sets, well short of failure.</p>
+
+<div class="table-wrap"><table class="cal-table" id="calendar"></table></div>
+
+<script src="assets/program-data.js"></script>
+<script>
+(function () {
+  var C = window.CAL;
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  var rungs = C.defaultRungs();
+  try {
+    var stored = JSON.parse(localStorage.getItem('cal-rungs') || 'null');
+    if (stored) rungs = Object.assign(rungs, stored);
+  } catch (e) {}
+
+  function boxes(n) {
+    var out = '';
+    for (var i = 0; i < n; i++) out += '<i></i>';
+    return '<span class="boxes">' + out + '</span>';
+  }
+
+  function cardFor(phase, letter) {
+    var def = phase.sessions[letter];
+    var midWeek = Math.min(phase.to, phase.from + 2); // representative non-ramp week
+    var rows = def.items.map(function (it) {
+      var sets = C.setsForWeek(it.sets, midWeek);
+      var range = it.min === it.max ? String(it.min) : it.min + '–' + it.max;
+      return '<tr>' +
+        '<td>' + (it.skill ? '<span style="color:var(--accent);font-weight:700">skill</span> ' : '') + esc(C.label(it.k, rungs)) + '</td>' +
+        '<td class="num">' + sets + ' × ' + range + '</td>' +
+        '<td class="num">' + (it.rest >= 60 ? (it.rest / 60) + ' min' : it.rest + ' s') + '</td>' +
+        '<td class="num">' + boxes(sets) + '</td>' +
+        '</tr>';
+    }).join('');
+
+    return '<div class="card-sheet">' +
+      '<div class="ph">' + esc(phase.name) + ' · weeks ' + phase.from + '–' + phase.to + '</div>' +
+      '<h3>Session ' + letter + ' — ' + esc(def.title) + '</h3>' +
+      '<p style="font-size:.8rem;color:var(--text-muted);margin:.3rem 0 0">Warm up 8 min first: cardio, wrist prep, shoulder prep, one easy set. ' +
+      'Weeks 1–2 and deload weeks use fewer sets — see the calendar below.</p>' +
+      '<table><thead><tr><th>Exercise</th><th class="num">Sets × reps</th><th class="num">Rest</th><th class="num">Reps done</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table>' +
+      '<p style="font-size:.78rem;color:var(--text-muted);margin:.55rem 0 0">Date: ______________ &nbsp; Sleep: ______ h &nbsp; ' +
+      'Felt: ○ strong ○ normal ○ flat &nbsp; Notes: ______________________________</p>' +
+      '</div>';
+  }
+
+  function renderCards(which) {
+    var phases = which === 'all' ? C.PHASES : [C.PHASES[which]];
+    $('cards').innerHTML = phases.map(function (p, pi) {
+      return (pi > 0 ? '<div class="print-break"></div>' : '') +
+        C.ORDER.map(function (l) { return cardFor(p, l); }).join('');
+    }).join('');
+  }
+
+  function renderCalendar() {
+    var rows = '';
+    for (var w = 1; w <= 24; w++) {
+      var phase = C.phaseForWeek(w), dl = C.isDeload(w);
+      var note = dl ? 'Deload — half sets, 4–5 RIR'
+        : w === 1 ? 'Baseline test, photos, measurements'
+        : w <= 2 ? 'Volume ramp — fewer sets on purpose'
+        : w === 9 ? 'Retest the baseline'
+        : w === 4 ? 'Bar should be up by now'
+        : '';
+      rows += '<tr' + (dl ? ' class="deload"' : '') + '>' +
+        '<td class="wk">' + w + '</td>' +
+        '<td>' + esc(phase.name) + '</td>' +
+        '<td class="box"><span></span></td><td class="box"><span></span></td><td class="box"><span></span></td>' +
+        '<td class="num">____ lb</td>' +
+        '<td class="note-cell">' + esc(note) + '</td></tr>';
+    }
+    $('calendar').innerHTML =
+      '<thead><tr><th class="num">Week</th><th>Phase</th><th class="num">A</th><th class="num">B</th><th class="num">C</th>' +
+      '<th class="num">Weight</th><th>Focus</th></tr></thead><tbody>' + rows + '</tbody>';
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    renderCards(0);
+    renderCalendar();
+    $('btn-print').addEventListener('click', function () { window.print(); });
+    document.querySelectorAll('[data-phase]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var v = b.getAttribute('data-phase');
+        document.querySelectorAll('[data-phase]').forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+        renderCards(v === 'all' ? 'all' : +v);
+      });
+    });
+  });
+})();
+</script>
+
+<div class="next-prev">
+  <a href="today.html"><span class="k">Previous</span><span class="t">← Today&#39;s session</span></a>
+  <a href="tracker.html"><span class="k">Next</span><span class="t">Tracker &amp; history →</span></a>
+</div>
+
+</main>

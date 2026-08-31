@@ -41,7 +41,7 @@ const server = http.createServer((req, res) => {
 let BASE;
 const PAGES = ['index.html','fundamentals.html','exercises.html','program.html','goals.html',
                'nutrition.html','recovery.html','gear.html','tracker.html','faq.html',
-               'today.html','rungs.html','references.html','search.html'];
+               'today.html','rungs.html','cards.html','references.html','search.html'];
 
 let failures = [];
 function check(name, cond, detail) {
@@ -302,6 +302,31 @@ async function load(page) {
 
     click(d.getElementById('btn-reset'));
     check('reset clears answers', /not answered yet/.test(d.getElementById('summary').textContent));
+  }
+
+  console.log('\n=== printable cards (cards.html) ===');
+  {
+    const w = loaded['cards.html'].window, d = w.document;
+    const click = el => el.dispatchEvent(new w.Event('click', { bubbles: true }));
+
+    check('three cards for the first phase', d.querySelectorAll('.card-sheet').length === 3,
+          String(d.querySelectorAll('.card-sheet').length));
+    check('cards name real exercises', /push-up/i.test(d.getElementById('cards').textContent));
+    check('cards have rep boxes', d.querySelectorAll('.card-sheet .boxes i').length > 10,
+          String(d.querySelectorAll('.card-sheet .boxes i').length));
+    check('cards show rest times', /min|\bs\b/.test(d.querySelector('.card-sheet').textContent));
+
+    click(d.querySelector('[data-phase="all"]'));
+    check('all nine cards', d.querySelectorAll('.card-sheet').length === 9,
+          String(d.querySelectorAll('.card-sheet').length));
+    check('all three phases named', ['Onramp','Foundation','Build'].every(n => d.getElementById('cards').textContent.includes(n)));
+
+    const rows = d.querySelectorAll('#calendar tbody tr');
+    check('calendar has 24 weeks', rows.length === 24, String(rows.length));
+    check('four deload weeks shaded', d.querySelectorAll('#calendar tr.deload').length === 4,
+          String(d.querySelectorAll('#calendar tr.deload').length));
+    check('week 1 flags the baseline test', /Baseline test/.test(rows[0].textContent), rows[0].textContent);
+    check('each week has three session boxes', rows[10].querySelectorAll('td.box').length === 3);
   }
 
   console.log('\n=== shared behavior ===');

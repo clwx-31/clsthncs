@@ -18,6 +18,7 @@ build tracker.html      "Tracker"           "A local workout, body-metric, and b
 build faq.html          "FAQ & Myths"       "Direct answers to common beginner calisthenics questions, myths worth unlearning, and a troubleshooting table."
 build today.html        "Today's Session"   "What to do in this session: your week, your rungs, last time's numbers, and a rest timer."
 build rungs.html        "Rung Finder"       "Eleven questions that set your starting rung on every calisthenics progression ladder."
+build cards.html        "Session Cards"     "Printable session cards and a 24-week wall calendar, generated from the program and your saved rungs."
 build references.html   "References"        "Sources for the claims on this site, what the evidence does not settle, and how the guidance changes by sex, age, and starting point."
 build search.html       "Search"            "Search every section of the site. Works offline once the page has been visited."
 
