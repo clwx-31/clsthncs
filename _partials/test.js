@@ -195,6 +195,52 @@ async function load(page) {
     check('localStorage populated', JSON.parse(w.localStorage.getItem('cal-workouts')).length === 3);
   }
 
+  console.log('\n=== weekly review ===');
+  {
+    const w = loaded['tracker.html'].window, d = w.document;
+    const set = (id, v) => { d.getElementById(id).value = v; };
+    const click = id => d.getElementById(id).dispatchEvent(new w.Event('click', { bubbles: true }));
+    const day = n => new Date(Date.now() - n * 86400000).toISOString().slice(0, 10);
+
+    // start from a clean log so the numbers below are exact
+    w.localStorage.setItem('cal-workouts', '[]');
+
+    // one older session to beat, then three inside the last 7 days
+    set('k-date', day(10)); set('k-ex', 'Chin-up'); set('k-reps', '4,3,3'); click('k-save');
+    set('k-date', day(5)); set('k-ex', 'Chin-up'); set('k-reps', '6,5,4'); click('k-save');
+    set('k-date', day(3)); set('k-ex', 'Push-up'); set('k-reps', '12,11,10'); click('k-save');
+    set('k-date', day(1)); set('k-ex', 'Chin-up'); set('k-reps', '5,5,4'); click('k-save');
+
+    check('counts sessions in the last 7 days', d.getElementById('r-sessions').textContent === '3',
+          d.getElementById('r-sessions').textContent);
+    check('counts working sets', +d.getElementById('r-sets').textContent === 9,
+          d.getElementById('r-sets').textContent);
+    // last 7 days: chin-up 6+5+4, push-up 12+11+10, chin-up 5+5+4 = 62
+    check('counts total reps', +d.getElementById('r-reps').textContent === 62,
+          d.getElementById('r-reps').textContent);
+    // chin-up 6 beats the older 4; push-up has no prior history so it is not "beaten"
+    check('detects a beaten best', d.getElementById('r-pbs').textContent === '1',
+          d.getElementById('r-pbs').textContent);
+    check('names the beaten exercise with the gain', /Chin-up/.test(d.getElementById('r-pbtable').textContent) &&
+          /\+2/.test(d.getElementById('r-pbtable').innerHTML), d.getElementById('r-pbtable').textContent.slice(0, 90));
+    check('flags first-time exercises separately', /first time/.test(d.getElementById('r-pbtable').textContent),
+          d.getElementById('r-pbtable').textContent.slice(0, 90));
+    check('first-time count reported', d.getElementById('r-pbs-d').textContent.indexOf('first time') > 0,
+          d.getElementById('r-pbs-d').textContent);
+    check('verdict reacts to a good week', /on track|good week/i.test(d.getElementById('r-verdict').textContent),
+          d.getElementById('r-verdict').textContent.slice(0, 80));
+    check('sleep shows as unavailable without notes', d.getElementById('r-sleep').textContent === '—',
+          d.getElementById('r-sleep').textContent);
+
+    // sleep is read out of the runner's note format
+    set('k-date', day(2)); set('k-ex', 'Dip'); set('k-reps', '6,6'); set('k-note', 'felt flat · 6 h sleep');
+    click('k-save');
+    check('reads sleep out of session notes', /6\.0/.test(d.getElementById('r-sleep').textContent),
+          d.getElementById('r-sleep').textContent);
+    check('flags short sleep', /Under 7 hours/.test(d.getElementById('r-sleep-d').textContent),
+          d.getElementById('r-sleep-d').textContent);
+  }
+
   console.log('\n=== tracker backup round-trip ===');
   {
     const w = loaded['tracker.html'].window, d = w.document;

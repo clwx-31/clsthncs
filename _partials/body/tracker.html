@@ -37,13 +37,13 @@
 </div>
 
 <div class="card">
-  <h4>Weight over time</h4>
+  <h3>Weight over time</h3>
   <div id="chart" style="overflow-x:auto"></div>
   <p style="font-size:.82rem;color:var(--text-muted);margin:.5rem 0 0">Dots are individual weigh-ins; the line is the 7-day rolling average.</p>
 </div>
 
 <div class="card">
-  <h4>Recent body-metric entries</h4>
+  <h3>Recent body-metric entries</h3>
   <div class="table-wrap" id="w-table" style="margin-bottom:0"></div>
 </div>
 
@@ -87,14 +87,37 @@
 </div>
 
 <div class="card">
-  <h4>Personal bests <span style="font-weight:400;color:var(--text-muted);font-size:.85rem">— best single set for each exercise</span></h4>
+  <h3>Personal bests <span style="font-weight:400;color:var(--text-muted);font-size:.85rem">— best single set for each exercise</span></h3>
   <div class="table-wrap" id="pb-table" style="margin-bottom:0"></div>
 </div>
 
 <div class="card">
-  <h4>Recent workout entries</h4>
+  <h3>Recent workout entries</h3>
   <div class="field" style="max-width:320px"><label for="k-filter">Filter by exercise</label><input id="k-filter" placeholder="type to filter"></div>
   <div class="table-wrap" id="k-table" style="margin-bottom:0"></div>
+</div>
+
+<h2 id="review">This week</h2>
+
+<p>The last seven days against the seven before them. This is the comparison that actually predicts whether you&#39;ll still be training in six months — not the mirror, and not the scale.</p>
+
+<div class="grid grid-3">
+  <div class="stat"><div class="k">Sessions</div><div class="v" id="r-sessions">—</div><div class="d" id="r-sessions-d">Target: 3 a week.</div></div>
+  <div class="stat"><div class="k">Working sets</div><div class="v" id="r-sets">—</div><div class="d" id="r-sets-d"></div></div>
+  <div class="stat"><div class="k">Total reps</div><div class="v" id="r-reps">—</div><div class="d" id="r-reps-d"></div></div>
+  <div class="stat"><div class="k">Bests beaten</div><div class="v" id="r-pbs">—</div><div class="d" id="r-pbs-d">Exercises where you set a new best set this week.</div></div>
+  <div class="stat"><div class="k">Weight trend</div><div class="v" id="r-wt">—</div><div class="d" id="r-wt-d">Lean bulk target: +0.25 to +0.5 lb/week.</div></div>
+  <div class="stat"><div class="k">Sleep logged</div><div class="v" id="r-sleep">—</div><div class="d" id="r-sleep-d">From the session runner&#39;s notes.</div></div>
+</div>
+
+<div class="card">
+  <h3>Verdict</h3>
+  <p id="r-verdict" style="margin:0">Log a couple of sessions and this fills in.</p>
+</div>
+
+<div class="card">
+  <h3>New bests this week</h3>
+  <div class="table-wrap" id="r-pbtable" style="margin-bottom:0"></div>
 </div>
 
 <h2 id="test">Baseline test</h2>
@@ -111,7 +134,7 @@
 </div>
 
 <div class="card">
-  <h4>Test history</h4>
+  <h3>Test history</h3>
   <div class="table-wrap" id="t-table" style="margin-bottom:0"></div>
 </div>
 
@@ -262,9 +285,139 @@
       b.addEventListener('click',function(){
         var id=b.getAttribute('data-kdel');
         save('cal-workouts', load('cal-workouts').filter(function(x){return String(x.id)!==id;}));
-        renderWorkouts();
+        renderWorkouts(); renderReview();
       });
     });
+  }
+
+  /* ---------------- weekly review ---------------- */
+
+  function dayDiff(dateStr) {
+    var d = new Date(dateStr + 'T00:00:00');
+    if (isNaN(d)) return Infinity;
+    var now = new Date(); now.setHours(0, 0, 0, 0);
+    return Math.round((now - d) / 86400000);
+  }
+
+  /* Rep-unit entries only — summing seconds of plank with reps of push-ups
+     would produce a number that means nothing. */
+  function repTotal(e) {
+    if ((e.unit || 'reps') !== 'reps') return 0;
+    return (e.sets || []).reduce(function (a, b) { return a + b; }, 0);
+  }
+
+  function renderReview() {
+    var all = load('cal-workouts');
+    var thisWeek = all.filter(function (e) { var d = dayDiff(e.d); return d >= 0 && d < 7; });
+    var lastWeek = all.filter(function (e) { var d = dayDiff(e.d); return d >= 7 && d < 14; });
+    var older    = all.filter(function (e) { return dayDiff(e.d) >= 7; });
+
+    function days(list) { var s = {}; list.forEach(function (e) { s[e.d] = 1; }); return Object.keys(s).length; }
+    function sets(list) { return list.reduce(function (t, e) { return t + (e.sets || []).length; }, 0); }
+    function reps(list) { return list.reduce(function (t, e) { return t + repTotal(e); }, 0); }
+
+    function delta(now, before, unit) {
+      if (!before) return '';
+      var diff = now - before;
+      var word = diff > 0 ? 'up' : diff < 0 ? 'down' : 'level with';
+      return word + ' ' + (diff ? Math.abs(diff) + ' ' + (unit || '') : '') + ' vs last week';
+    }
+
+    var sNow = days(thisWeek), sPrev = days(lastWeek);
+    $('r-sessions').textContent = sNow;
+    $('r-sessions-d').textContent = sNow >= 3 ? 'Target met.' :
+      (sNow === 0 ? 'Nothing logged in the last 7 days.' : (3 - sNow) + ' to go this week.') +
+      (sPrev ? ' Last week: ' + sPrev + '.' : '');
+
+    $('r-sets').textContent = sets(thisWeek);
+    $('r-sets-d').textContent = delta(sets(thisWeek), sets(lastWeek), 'sets') || 'No comparison yet.';
+    $('r-reps').textContent = reps(thisWeek);
+    $('r-reps-d').textContent = delta(reps(thisWeek), reps(lastWeek), 'reps') || 'Rep-based exercises only.';
+
+    /* A best is beaten when this week's top set for an exercise exceeds the
+       best single set recorded for it before this week. */
+    var bestBefore = {};
+    older.forEach(function (e) {
+      var m = Math.max.apply(null, e.sets || [0]);
+      var k = e.key || e.ex;
+      if (bestBefore[k] == null || m > bestBefore[k]) bestBefore[k] = m;
+    });
+    var bestNow = {};
+    thisWeek.forEach(function (e) {
+      var m = Math.max.apply(null, e.sets || [0]);
+      var k = e.key || e.ex;
+      if (!bestNow[k] || m > bestNow[k].m) bestNow[k] = { m: m, ex: e.ex, unit: e.unit || 'reps', d: e.d };
+    });
+    var beaten = Object.keys(bestNow).filter(function (k) {
+      return bestBefore[k] != null && bestNow[k].m > bestBefore[k];
+    });
+    var fresh = Object.keys(bestNow).filter(function (k) { return bestBefore[k] == null; });
+
+    $('r-pbs').textContent = beaten.length;
+    $('r-pbs-d').textContent = fresh.length
+      ? fresh.length + ' exercise' + (fresh.length === 1 ? '' : 's') + ' logged for the first time.'
+      : 'Exercises where you set a new best set this week.';
+
+    $('r-pbtable').innerHTML = (beaten.length || fresh.length)
+      ? '<table><thead><tr><th>Exercise</th><th class="num">Best this week</th><th class="num">Previous best</th><th class="num">Gain</th></tr></thead><tbody>' +
+        beaten.map(function (k) {
+          var b = bestNow[k];
+          return '<tr><td>' + esc(b.ex) + '</td><td class="num"><strong>' + b.m + '</strong> ' + esc(b.unit) + '</td>' +
+            '<td class="num">' + bestBefore[k] + '</td>' +
+            '<td class="num" style="color:var(--good);font-weight:650">+' + (b.m - bestBefore[k]) + '</td></tr>';
+        }).join('') +
+        fresh.map(function (k) {
+          var b = bestNow[k];
+          return '<tr><td>' + esc(b.ex) + '</td><td class="num"><strong>' + b.m + '</strong> ' + esc(b.unit) + '</td>' +
+            '<td class="num" style="color:var(--text-faint)">first time</td><td class="num">—</td></tr>';
+        }).join('') + '</tbody></table>'
+      : '<p style="color:var(--text-muted);font-size:.9rem;padding:.5rem">Nothing beaten yet this week. That is normal in a deload week, and after a layoff.</p>';
+
+    /* Weight: compare the mean of the last 7 days to the 7 before. */
+    var W = weights().filter(function (x) { return x.w; });
+    var recent = W.filter(function (x) { return dayDiff(x.d) < 7; });
+    var prior  = W.filter(function (x) { var dd = dayDiff(x.d); return dd >= 7 && dd < 14; });
+    function mean(a) { return a.reduce(function (t, x) { return t + x.w; }, 0) / a.length; }
+    if (recent.length && prior.length) {
+      var rate = mean(recent) - mean(prior);
+      $('r-wt').innerHTML = (rate >= 0 ? '+' : '') + fmt(rate, 2) + ' <small>lb</small>';
+      $('r-wt-d').textContent = rate > 0.6 ? 'Faster than a lean bulk — trim about 200 kcal/day.'
+        : rate >= 0.2 ? 'Right in the lean-bulk band. Hold calories steady.'
+        : rate >= -0.05 ? 'Flat. Add about 250 kcal/day and give it three weeks.'
+        : 'Losing. If you meant to bulk, you are not eating enough.';
+    } else {
+      $('r-wt').textContent = '—';
+      $('r-wt-d').textContent = 'Needs two weeks of weigh-ins.';
+    }
+
+    /* The runner writes "… 7 h sleep …" into the note field. */
+    var slept = [];
+    thisWeek.forEach(function (e) {
+      var m = /([\d.]+)\s*h sleep/.exec(e.note || '');
+      if (m) slept.push({ d: e.d, h: parseFloat(m[1]) });
+    });
+    var byDay = {};
+    slept.forEach(function (x) { byDay[x.d] = x.h; });
+    var hrs = Object.keys(byDay).map(function (k) { return byDay[k]; });
+    if (hrs.length) {
+      var avg = hrs.reduce(function (a, b) { return a + b; }, 0) / hrs.length;
+      $('r-sleep').innerHTML = fmt(avg, 1) + ' <small>h avg</small>';
+      $('r-sleep-d').textContent = avg >= 7 ? 'In range. This is doing more for you than any supplement.'
+        : 'Under 7 hours. Fix this before changing anything about training.';
+    } else {
+      $('r-sleep').textContent = '—';
+      $('r-sleep-d').textContent = 'Fill in the sleep field on today\'s session and it appears here.';
+    }
+
+    /* Verdict: consistency first, then progression, then eating. */
+    var v;
+    if (!all.length) v = 'Nothing logged yet. Run a session and come back.';
+    else if (sNow === 0) v = '<strong style="color:var(--warn)">No sessions in the last 7 days.</strong> One missed session is noise; two in a row is how a habit dies. Do a short one today — even the <a href="program.html#life">20-minute version</a> counts.';
+    else if (sNow < 3) v = '<strong>' + sNow + ' of 3 sessions.</strong> Still time. Consistency outranks everything else on this page.';
+    else if (beaten.length >= 3) v = '<strong style="color:var(--good)">A good week.</strong> Three sessions and ' + beaten.length + ' exercises beaten. Keep the numbers climbing and don\'t add extra volume because it felt easy.';
+    else if (beaten.length >= 1) v = '<strong style="color:var(--good)">On track.</strong> Three sessions in, ' + beaten.length + ' best' + (beaten.length === 1 ? '' : 's') + ' beaten. That is exactly what progressive overload looks like week to week — it is meant to be small.';
+    else v = '<strong>Three sessions, but nothing beaten.</strong> Once is noise. If it happens three weeks running, work the <a href="goals.html#notworking">diagnostic</a> — it is almost always food, sleep, or a rung you cannot add reps to.';
+    $('r-verdict').innerHTML = v;
   }
 
   /* ---------------- baseline tests ---------------- */
@@ -295,7 +448,7 @@
 
   document.addEventListener('DOMContentLoaded',function(){
     $('w-date').value=today(); $('k-date').value=today(); $('t-date').value=today();
-    renderTestFields(); renderWeights(); renderWorkouts(); renderTests();
+    renderTestFields(); renderWeights(); renderWorkouts(); renderReview(); renderTests();
 
     $('w-save').addEventListener('click',function(){
       var d=$('w-date').value||today();
@@ -307,7 +460,7 @@
       var all=load('cal-weights').filter(function(x){return x.d!==d;});
       all.push(e); save('cal-weights',all);
       ['wt','waist','arm','chest','thigh'].forEach(function(f){ $('w-'+f).value=''; });
-      renderWeights();
+      renderWeights(); renderReview();
     });
 
     $('w-clear').addEventListener('click',function(){
@@ -325,11 +478,11 @@
         sets:sets, unit:$('k-unit').value, rir:$('k-rir').value, note:($('k-note').value||'').trim() });
       save('cal-workouts',all);
       $('k-reps').value=''; $('k-ex').value=''; $('k-rung').value='';
-      renderWorkouts();
+      renderWorkouts(); renderReview();
     });
 
     $('k-clear').addEventListener('click',function(){
-      if(confirm('Delete ALL workout entries? This cannot be undone.')){ save('cal-workouts',[]); renderWorkouts(); }
+      if(confirm('Delete ALL workout entries? This cannot be undone.')){ save('cal-workouts',[]); renderWorkouts(); renderReview(); }
     });
 
     $('k-filter').addEventListener('input',renderWorkouts);
@@ -420,7 +573,7 @@
             if(k.indexOf('cal-check-')===0){ try{ localStorage.setItem(k,data.checks[k]); }catch(e){} }
           });
 
-          renderWeights(); renderWorkouts(); renderTests();
+          renderWeights(); renderWorkouts(); renderReview(); renderTests();
           alert('Imported ' + parts.join(', ') + '.');
           if(data.checks || data.rungs || data.plan) location.reload();
         }catch(e){ alert('That file could not be read as a valid backup.'); }

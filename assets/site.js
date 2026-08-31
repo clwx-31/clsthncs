@@ -56,7 +56,7 @@
         if (event.key === 'Escape') closeMenu();
       });
       window.addEventListener('resize', function () {
-        if (window.innerWidth > 900) closeMenu();
+        if (window.innerWidth > 1500) closeMenu();
       });
     }
 
@@ -123,9 +123,7 @@
     var badge = document.createElement('div');
     badge.textContent = 'Offline \u2014 showing the cached copy';
     badge.setAttribute('role', 'status');
-    badge.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:200;' +
-      'background:var(--bg-raised,#fff);color:var(--text-muted,#555);border:1px solid var(--border,#ddd);' +
-      'border-radius:20px;padding:.35rem .85rem;font-size:.78rem;box-shadow:0 2px 10px rgba(0,0,0,.15);display:none';
+    badge.className = 'offline-badge';
     document.body.appendChild(badge);
     var syncOnline = function () { badge.style.display = navigator.onLine ? 'none' : 'block'; };
     window.addEventListener('online', syncOnline);
