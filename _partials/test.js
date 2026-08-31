@@ -401,6 +401,22 @@ async function load(page) {
     // week 20 -> Build phase
     wk.value = '20'; click(d.getElementById('p-save'));
     check('week 20 is Build phase', /Build/.test(d.getElementById('s-phase').textContent), d.getElementById('s-phase').textContent);
+
+    // checkpoint and end-of-program guidance
+    wk.value = '1'; click(d.getElementById('p-save'));
+    check('week 1 prompts the baseline test', /baseline test/i.test(d.getElementById('weeknote').textContent),
+          d.getElementById('weeknote').textContent.slice(0, 60));
+    wk.value = '12'; click(d.getElementById('p-save'));
+    check('week 12 flags the checkpoint', /checkpoint/i.test(d.getElementById('weeknote').textContent),
+          d.getElementById('weeknote').textContent.slice(0, 60));
+    wk.value = '17'; click(d.getElementById('p-save'));
+    check('ordinary weeks show no callout', d.getElementById('weeknote').style.display === 'none');
+    wk.value = '30'; click(d.getElementById('p-save'));
+    check('past week 24 reads sensibly', /past week 24/.test(d.getElementById('s-week').textContent),
+          d.getElementById('s-week').textContent);
+    check('past week 24 points at what comes next', /what comes after|rung finder/i.test(d.getElementById('weeknote').textContent),
+          d.getElementById('weeknote').textContent.slice(0, 60));
+    check('past week 24 still serves a session', d.querySelectorAll('.ex-row').length > 0);
   }
 
   console.log('\n=== rung finder (rungs.html) ===');
@@ -437,16 +453,16 @@ async function load(page) {
     const w = loaded['cards.html'].window, d = w.document;
     const click = el => el.dispatchEvent(new w.Event('click', { bubbles: true }));
 
-    check('three cards for the first phase', d.querySelectorAll('.card-sheet').length === 3,
-          String(d.querySelectorAll('.card-sheet').length));
+    check('three cards for the first phase', d.querySelectorAll('#cards .card-sheet').length === 3,
+          String(d.querySelectorAll('#cards .card-sheet').length));
     check('cards name real exercises', /push-up/i.test(d.getElementById('cards').textContent));
-    check('cards have rep boxes', d.querySelectorAll('.card-sheet .boxes i').length > 10,
-          String(d.querySelectorAll('.card-sheet .boxes i').length));
-    check('cards show rest times', /min|\bs\b/.test(d.querySelector('.card-sheet').textContent));
+    check('cards have rep boxes', d.querySelectorAll('#cards .boxes i').length > 10,
+          String(d.querySelectorAll('#cards .boxes i').length));
+    check('cards show rest times', /min|\bs\b/.test(d.querySelector('#cards .card-sheet').textContent));
 
     click(d.querySelector('[data-phase="all"]'));
-    check('all nine cards', d.querySelectorAll('.card-sheet').length === 9,
-          String(d.querySelectorAll('.card-sheet').length));
+    check('all nine cards', d.querySelectorAll('#cards .card-sheet').length === 9,
+          String(d.querySelectorAll('#cards .card-sheet').length));
     check('all three phases named', ['Onramp','Foundation','Build'].every(n => d.getElementById('cards').textContent.includes(n)));
 
     const rows = d.querySelectorAll('#calendar tbody tr');
@@ -455,6 +471,11 @@ async function load(page) {
           String(d.querySelectorAll('#calendar tr.deload').length));
     check('week 1 flags the baseline test', /Baseline test/.test(rows[0].textContent), rows[0].textContent);
     check('each week has three session boxes', rows[10].querySelectorAll('td.box').length === 3);
+    check('baseline test sheet lists all twelve tests', /Max push-ups[\s\S]*Wall handstand/.test(d.body.textContent));
+    check('baseline sheet has retest columns', /Wk 1[\s\S]*Wk 9[\s\S]*Wk 12[\s\S]*Wk 24/.test(d.body.textContent));
+    check('measurement sheet has seven rows',
+          [...d.querySelectorAll('.card-sheet')].some(c => /Tape measurements/.test(c.textContent) &&
+            c.querySelectorAll('tbody tr').length === 7));
   }
 
   console.log('\n=== shared behavior ===');

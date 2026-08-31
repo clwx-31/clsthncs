@@ -449,6 +449,13 @@ main.home { width: min(calc(100% - 2 * var(--page-pad)), var(--wide)); padding-t
 }
 .grid > .card { margin: 0; border: 0; }
 .card h3, .card h4 { margin-top: 0; }
+.card:not(.workout-card) > h3 {
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .085em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
 .card > :last-child { margin-bottom: 0; }
 
 .stat { min-width: 0; padding: clamp(1.15rem, 2.2vw, 1.8rem); background: var(--bg-raised); }
@@ -728,6 +735,7 @@ input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible
   .next-prev { grid-template-columns: 1fr; }
   .btn-row .btn { flex: 1 1 100%; }
   .seg { width: 100%; display: grid !important; grid-template-columns: repeat(3, 1fr); }
+  .no-print .seg { grid-template-columns: repeat(2, 1fr); }
   .seg button { min-width: 0; padding-right: .35rem !important; padding-left: .35rem !important; }
   .footer-inner { grid-template-columns: 1fr; }
   .footer-notes { grid-column: auto; }

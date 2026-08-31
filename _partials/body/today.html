@@ -45,6 +45,8 @@
   <div class="stat"><div class="k">Working sets</div><div class="v" id="s-vol">—</div><div class="d" id="s-voln">Skill work not counted.</div></div>
 </div>
 
+<div id="weeknote" class="note" style="display:none"></div>
+
 <div id="deload" class="warn-box" style="display:none">
   <b>Deload week.</b> Half the sets, and stop 4–5 reps short of failure on everything. Keep the skill practice. This is planned — it lets fatigue clear and gives tendons time to catch up. <a href="program.html#deload">Why →</a>
 </div>
@@ -252,11 +254,27 @@
 
     $('hd-title').textContent = 'Week ' + week + ' · Session ' + letter;
     $('hd-sub').textContent = s.phase.blurb;
-    $('s-week').innerHTML = week + ' <small>of 24</small>';
+    $('s-week').innerHTML = week <= 24
+      ? week + ' <small>of 24</small>'
+      : week + ' <small>· past week 24</small>';
     $('s-phase').textContent = s.phase.name + ' phase (weeks ' + s.phase.from + '–' + s.phase.to + ')';
     $('s-sess').textContent = letter;
     $('s-sesstitle').textContent = s.title;
     $('deload').style.display = C.isDeload(week) ? '' : 'none';
+
+    var note = '';
+    if (week === 1) {
+      note = '<b>Week 1.</b> Do the <a href="goals.html#baseline">baseline test</a> and take photos before you train — you cannot go back and collect them later. Then run the session at 4 reps in reserve. Finishing it thinking &ldquo;I could have done more&rdquo; is the correct outcome.';
+    } else if (week === 4) {
+      note = '<b>Week 4 check.</b> Your pull-up bar should be up by now — Phase 2 starts next week and vertical pulling has no good floor substitute. <a href="gear.html#tier1">What to buy →</a>';
+    } else if (week === 9 || week === 12 || week === 24) {
+      note = '<b>Week ' + week + ' checkpoint.</b> Repeat the <a href="goals.html#baseline">baseline test</a>, retake your photos in the same light and pose, and redo your tape measurements. Compare against week 1, not against how you feel.';
+    } else if (week > 24) {
+      note = '<b>Past week 24.</b> You have finished the program, and it keeps serving Build-phase sessions. Three sensible directions from here — weighted basics, a skill specialization block, or a fourth day — are in <a href="program.html#after">what comes after week 24</a>. Also worth rerunning the <a href="rungs.html">rung finder</a>, since several of your rungs have probably moved.';
+    }
+    var noteEl = $('weeknote');
+    noteEl.innerHTML = note;
+    noteEl.style.display = note ? '' : 'none';
 
     document.querySelectorAll('[data-pick]').forEach(function (b) {
       b.setAttribute('aria-pressed', b.getAttribute('data-pick') === letter ? 'true' : 'false');
