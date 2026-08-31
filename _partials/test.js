@@ -195,6 +195,72 @@ async function load(page) {
     check('localStorage populated', JSON.parse(w.localStorage.getItem('cal-workouts')).length === 3);
   }
 
+  console.log('\n=== tracker backup round-trip ===');
+  {
+    const w = loaded['tracker.html'].window, d = w.document;
+
+    // seed some program state the tracker itself never writes
+    w.localStorage.setItem('cal-plan', JSON.stringify({ start: '2026-01-05' }));
+    w.localStorage.setItem('cal-rungs', JSON.stringify({ push: 5, vpull: 3 }));
+    w.localStorage.setItem('cal-check-m-9', '1');
+
+    // capture what the export button actually produces
+    let captured = null;
+    w.URL.createObjectURL = function (blob) { captured = blob; return 'blob:test'; };
+    d.getElementById('d-export').dispatchEvent(new w.Event('click', { bubbles: true }));
+    check('export produced a blob', !!captured);
+    const readBlob = b => new Promise((res, rej) => {
+      if (typeof b.text === 'function') return b.text().then(res, rej);
+      const fr = new w.FileReader();
+      fr.onload = () => res(fr.result); fr.onerror = rej;
+      fr.readAsText(b);
+    });
+    const payload = JSON.parse(await readBlob(captured));
+
+    check('backup includes weigh-ins', Array.isArray(payload.weights) && payload.weights.length > 0);
+    check('backup includes workouts', Array.isArray(payload.workouts) && payload.workouts.length > 0);
+    check('backup includes baseline tests', Array.isArray(payload.tests) && payload.tests.length > 0);
+    check('backup includes the program start date', payload.plan && payload.plan.start === '2026-01-05',
+          JSON.stringify(payload.plan));
+    check('backup includes your rungs', payload.rungs && payload.rungs.push === 5, JSON.stringify(payload.rungs));
+    check('backup includes ticked boxes', payload.checks && payload.checks['cal-check-m-9'] === '1',
+          JSON.stringify(payload.checks));
+    check('backup is versioned', payload.version === 2 && /backup/.test(payload.format || ''));
+
+    // import: an older backup must not wipe the fields it predates
+    const legacy = JSON.stringify({ exported: '2026-01-01', weights: [{ d: '2026-01-01', w: 149 }], workouts: [], tests: [] });
+    const file = new w.File([legacy], 'old.json', { type: 'application/json' });
+    const input = d.getElementById('d-file');
+    Object.defineProperty(input, 'files', { value: [file], configurable: true });
+    w.confirm = () => true; w.alert = () => {};
+    input.dispatchEvent(new w.Event('change', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 250));
+    check('old backup replaces weigh-ins', JSON.parse(w.localStorage.getItem('cal-weights')).length === 1,
+          w.localStorage.getItem('cal-weights'));
+    check('old backup leaves rungs intact', JSON.parse(w.localStorage.getItem('cal-rungs')).push === 5,
+          w.localStorage.getItem('cal-rungs'));
+    check('old backup leaves the plan intact', JSON.parse(w.localStorage.getItem('cal-plan')).start === '2026-01-05');
+
+    // a full v2 backup restores everything
+    const full = JSON.stringify({ format: 'calisthenics-start-backup', version: 2,
+      weights: [], workouts: [], tests: [], plan: { start: '2025-09-01' },
+      rungs: { push: 8 }, checks: { 'cal-check-m-16': '1' } });
+    Object.defineProperty(input, 'files', { value: [new w.File([full], 'new.json')], configurable: true });
+    input.dispatchEvent(new w.Event('change', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 250));
+    check('v2 backup restores the plan', JSON.parse(w.localStorage.getItem('cal-plan')).start === '2025-09-01');
+    check('v2 backup restores rungs', JSON.parse(w.localStorage.getItem('cal-rungs')).push === 8);
+    check('v2 backup restores ticked boxes', w.localStorage.getItem('cal-check-m-16') === '1');
+
+    // junk is rejected rather than half-applied
+    Object.defineProperty(input, 'files', { value: [new w.File(['not json at all'], 'junk.json')], configurable: true });
+    let alerted = '';
+    w.alert = m => { alerted = m; };
+    input.dispatchEvent(new w.Event('change', { bubbles: true }));
+    await new Promise(r => setTimeout(r, 250));
+    check('junk file is rejected', /could not be read/i.test(alerted), alerted);
+  }
+
   console.log('\n=== search ===');
   {
     const w = loaded['search.html'].window, d = w.document;

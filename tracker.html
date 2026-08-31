@@ -171,7 +171,8 @@
 <h2 id="data">Your data</h2>
 
 <div class="card">
-  <p>Everything is stored locally in this browser under the keys <code>cal-weights</code>, <code>cal-workouts</code>, and <code>cal-tests</code>. Export gives you a single JSON file you can re-import later or on another device.</p>
+  <p>Everything is stored locally in this browser: your weigh-ins and measurements, your workout log, your baseline tests, your program start date, the rung you&#39;re on for every ladder, and every checklist and milestone box you&#39;ve ticked across the site. Export gives you all of it in one JSON file you can re-import here or on another device.</p>
+  <p style="font-size:.9rem;color:var(--text-muted)">Importing only replaces the sections the file actually contains, so an older backup won&#39;t wipe newer data it doesn&#39;t know about.</p>
   <div class="btn-row" style="margin-bottom:0">
     <button class="btn" id="d-export" type="button">Export JSON backup</button>
     <button class="btn ghost" id="d-csv" type="button">Export workouts as CSV</button>
@@ -409,9 +410,29 @@
       setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
     }
 
+    function rawObj(k){
+      try{ var v=localStorage.getItem(k); return v?JSON.parse(v):null; }catch(e){ return null; }
+    }
+
+    /* Every checklist and milestone box on the site persists as cal-check-<id>. */
+    function allChecks(){
+      var out={};
+      try{
+        for(var i=0;i<localStorage.length;i++){
+          var k=localStorage.key(i);
+          if(k && k.indexOf('cal-check-')===0) out[k]=localStorage.getItem(k);
+        }
+      }catch(e){}
+      return out;
+    }
+
     $('d-export').addEventListener('click',function(){
       download('calisthenics-backup-'+today()+'.json',
-        JSON.stringify({exported:today(), weights:load('cal-weights'), workouts:load('cal-workouts'), tests:load('cal-tests')},null,2),
+        JSON.stringify({
+          format:'calisthenics-start-backup', version:2, exported:today(),
+          weights:load('cal-weights'), workouts:load('cal-workouts'), tests:load('cal-tests'),
+          plan:rawObj('cal-plan'), rungs:rawObj('cal-rungs'), checks:allChecks()
+        },null,2),
         'application/json');
     });
 
@@ -432,10 +453,29 @@
       r.onload=function(){
         try{
           var data=JSON.parse(r.result);
-          if(!confirm('Replace all current data with the contents of this file?')) return;
-          save('cal-weights',data.weights||[]); save('cal-workouts',data.workouts||[]); save('cal-tests',data.tests||[]);
+          if(!data || typeof data!=='object') throw new Error('not an object');
+          var parts=[];
+          if(data.weights)  parts.push(data.weights.length+' body-metric entries');
+          if(data.workouts) parts.push(data.workouts.length+' workout entries');
+          if(data.tests)    parts.push(data.tests.length+' baseline tests');
+          if(data.plan)     parts.push('program start date');
+          if(data.rungs)    parts.push('your rungs');
+          if(data.checks)   parts.push(Object.keys(data.checks).length+' ticked boxes');
+          if(!parts.length) throw new Error('nothing recognisable in it');
+          if(!confirm('Replace '+parts.join(', ')+'? Anything not in the file is left alone.')) return;
+
+          if(data.weights)  save('cal-weights',data.weights);
+          if(data.workouts) save('cal-workouts',data.workouts);
+          if(data.tests)    save('cal-tests',data.tests);
+          if(data.plan)     save('cal-plan',data.plan);
+          if(data.rungs)    save('cal-rungs',data.rungs);
+          if(data.checks)   Object.keys(data.checks).forEach(function(k){
+            if(k.indexOf('cal-check-')===0){ try{ localStorage.setItem(k,data.checks[k]); }catch(e){} }
+          });
+
           renderWeights(); renderWorkouts(); renderTests();
-          alert('Imported.');
+          alert('Imported ' + parts.join(', ') + '.');
+          if(data.checks || data.rungs || data.plan) location.reload();
         }catch(e){ alert('That file could not be read as a valid backup.'); }
       };
       r.readAsText(f);
