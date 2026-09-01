@@ -6,6 +6,15 @@ cd "$(dirname "$0")"
 
 build() { _partials/mk.sh "$1" "$2" "$3" "_partials/body/$1"; }
 
+# Regenerate the exercise ladders from assets/program-data.js before building
+# pages. Skipped without node — the generated markup is committed, so a build
+# without node still produces a correct site, just without picking up data edits.
+if command -v node >/dev/null 2>&1; then
+  node _partials/mkladders.js
+else
+  echo "node not found — skipping ladder regeneration (using committed markup)"
+fi
+
 build index.html        "Start Here"        "A complete beginner's guide to calisthenics, built for a 5'9\" 150 lb lifter training three days a week with no equipment."
 build fundamentals.html "Fundamentals"      "Progressive overload, RIR, sets and reps, tempo, rest, frequency, and the five ways to make a bodyweight exercise harder."
 build exercises.html    "Exercise Library"  "Progression ladders for every calisthenics movement, from wall push-ups to the front lever, with rep gates, cues, and common mistakes."

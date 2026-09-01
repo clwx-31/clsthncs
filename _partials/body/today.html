@@ -23,6 +23,19 @@
   .seg button { border: none; background: var(--bg); color: var(--text-muted); padding: .35rem .75rem; font: inherit; font-size: .88rem; cursor: pointer; }
   .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; font-weight: 650; }
   /* Keeps the document outline intact (h1 → h2) without the visual weight of a section heading. */
+  .howto { margin-top: .6rem; border-top: 1px dashed var(--border); padding-top: .5rem; }
+  .howto > summary { cursor: pointer; font-size: .82rem; font-weight: 700; color: var(--accent); list-style: none; text-transform: uppercase; letter-spacing: .06em; }
+  .howto > summary::-webkit-details-marker { display: none; }
+  .howto > summary::before { content: "+ "; }
+  .howto[open] > summary::before { content: "\2212 "; }
+  .howto-body { font-size: .9rem; line-height: 1.55; padding-top: .4rem; }
+  .howto-body p { margin: 0 0 .45rem; }
+  .howto-body p:last-child { margin-bottom: 0; }
+  .howto-body .cue b, .howto-body .avoid b { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; margin-right: .35rem; }
+  .howto-body .cue { color: var(--text); }
+  .howto-body .cue b { color: var(--good); }
+  .howto-body .avoid { color: var(--text-muted); }
+  .howto-body .avoid b { color: var(--stop); }
   .rir-box { display: inline-flex; align-items: center; gap: .3rem; margin-left: .5rem; }
   .rir-box label { font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin: 0; font-weight: 700; }
   .rir-box input { width: 3.2rem; text-align: center; padding: .4rem .3rem; }
@@ -58,6 +71,7 @@
     <button type="button" data-pick="C" aria-pressed="false">Session C</button>
   </span>
   <button class="btn ghost" type="button" id="btn-warmup">Warm-up checklist</button>
+  <button class="btn ghost" type="button" id="btn-how">Show all instructions</button>
 </div>
 
 <div id="warmup" class="card" style="display:none">
@@ -289,6 +303,7 @@
       var prev = prevFor(it.k);
       var vals = entered[i] || [];
       var ladder = C.LADDERS[it.k];
+      var g = C.guide(it.k, rungs);
 
       var inputs = '';
       for (var j = 0; j < sets; j++) {
@@ -308,6 +323,12 @@
           (prev ? '<span class="ex-prev">last time: ' + prev.sets.join(' / ') + ' <span style="opacity:.7">(' + esc(prev.d) + ')</span></span>' : '<span class="ex-prev">no history yet</span>') +
         '</div>' +
         (it.note ? '<p style="font-size:.85rem;color:var(--text-muted);margin:0 0 .5rem">' + esc(it.note) + '</p>' : '') +
+        (g ? '<details class="howto"><summary>How to do it</summary>' +
+             '<div class="howto-body">' +
+             '<p>' + esc(g.how) + '</p>' +
+             '<p class="cue"><b>Cue</b> ' + esc(g.cue) + '</p>' +
+             '<p class="avoid"><b>Avoid</b> ' + esc(g.avoid) + '</p>' +
+             '</div></details>' : '') +
         '<div class="set-inputs">' + inputs + '<span class="u">' + esc(unit) + '</span>' +
           (it.skill ? '' :
             '<span class="rir-box"><label for="rir-' + i + '">RIR</label>' +
@@ -452,6 +473,14 @@
     $('btn-warmup').addEventListener('click', function () {
       var el = $('warmup');
       el.style.display = el.style.display === 'none' ? '' : 'none';
+    });
+
+    // Handy on a first run-through, or when printing the page.
+    $('btn-how').addEventListener('click', function () {
+      var all = document.querySelectorAll('details.howto');
+      var opening = !Array.prototype.every.call(all, function (d) { return d.open; });
+      all.forEach(function (d) { d.open = opening; });
+      $('btn-how').textContent = opening ? 'Hide all instructions' : 'Show all instructions';
     });
 
     $('p-save').addEventListener('click', function () {

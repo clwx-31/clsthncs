@@ -15,6 +15,7 @@
   .cal-table td.box span { display: inline-block; width: 1.3rem; height: 1.3rem; border: 1px solid var(--border-strong); border-radius: 3px; }
   .cal-table tr.deload { background: var(--warn-soft); }
   .cal-table .note-cell { min-width: 8rem; }
+  .card-sheet .cue { display: block; font-size: .74rem; color: var(--text-muted); line-height: 1.35; margin-top: .15rem; max-width: 34rem; }
 
   /* Same control as the session runner. Duplicated rather than added to
      style.css so page styling stays out of Codex's way; fold both into
@@ -44,7 +45,7 @@
 
 <div class="no-print">
   <div class="note">
-    <b>These use your saved rungs.</b> If you&#39;ve run the <a href="rungs.html">rung finder</a>, the cards name the exact variation you should be doing. Otherwise they show the beginner defaults. Rep ranges and rest come straight from <a href="program.html">the program</a>, so a card and the site can never drift apart.
+    <b>These use your saved rungs.</b> If you&#39;ve run the <a href="rungs.html">rung finder</a>, the cards name the exact variation you should be doing and print the one cue that matters for it. Otherwise they show the beginner defaults. Rep ranges and rest come straight from <a href="program.html">the program</a>, so a card and the site can never drift apart.
   </div>
   <div class="btn-row">
     <button class="btn" type="button" id="btn-print">Print / save as PDF</button>
@@ -140,8 +141,11 @@
     var rows = def.items.map(function (it) {
       var sets = C.setsForWeek(it.sets, midWeek);
       var range = it.min === it.max ? String(it.min) : it.min + '–' + it.max;
+      var g = C.guide(it.k, rungs);
       return '<tr>' +
-        '<td>' + (it.skill ? '<span style="color:var(--accent);font-weight:700">skill</span> ' : '') + esc(C.label(it.k, rungs)) + '</td>' +
+        '<td>' + (it.skill ? '<span style="color:var(--accent);font-weight:700">skill</span> ' : '') +
+          esc(C.label(it.k, rungs)) +
+          (g ? '<span class="cue">' + esc(g.cue) + '</span>' : '') + '</td>' +
         '<td class="num">' + sets + ' × ' + range + '</td>' +
         '<td class="num">' + (it.rest >= 60 ? (it.rest / 60) + ' min' : it.rest + ' s') + '</td>' +
         '<td class="num">' + boxes(sets) + '</td>' +

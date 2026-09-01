@@ -149,6 +149,16 @@ def main():
         problems.extend(a11y_problems)
         warnings.extend(a11y_warnings)
 
+    # A build killed partway (a piped `./build.sh | head`, an interrupt) leaves
+    # generated pages older than their sources. That is invisible until
+    # something mysteriously does not work, so check it here.
+    for page in pages:
+        source = os.path.join("_partials/body", page)
+        for dep in (source, "_partials/head.html", "_partials/foot.html"):
+            if os.path.exists(dep) and os.path.getmtime(dep) > os.path.getmtime(page) + 1:
+                problems.append("%s is older than %s — rerun ./build.sh" % (page, dep))
+                break
+
     if os.path.exists("sw.js"):
         listed = re.findall(r"^  '([^']+)',?$", open("sw.js", encoding="utf-8").read(), re.M)
         for a in listed:

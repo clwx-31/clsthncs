@@ -502,6 +502,87 @@ async function load(page) {
             c.querySelectorAll('tbody tr').length === 7));
   }
 
+  console.log('\n=== exercise instructions ===');
+  {
+    // The data is the single source of truth for the library, the runner and the cards.
+    const path = require('path');
+    global.window = global.window || {};
+    delete require.cache[require.resolve(path.join(ROOT, 'assets/program-data.js'))];
+    require(path.join(ROOT, 'assets/program-data.js'));
+    const CAL = global.window.CAL;
+
+    const gaps = [];
+    let rungCount = 0;
+    Object.keys(CAL.LADDERS).forEach(k => {
+      CAL.LADDERS[k].rungs.forEach((r, i) => {
+        rungCount++;
+        ['n', 'gate', 'how', 'cue', 'avoid'].forEach(f => { if (!r[f]) gaps.push(k + '[' + i + '].' + f); });
+        if ((r.how || '').length < 80) gaps.push(k + '[' + i + '].how too short');
+      });
+    });
+    Object.keys(CAL.FIXED).forEach(k => {
+      ['n', 'unit', 'how', 'cue', 'avoid'].forEach(f => { if (!CAL.FIXED[k][f]) gaps.push('FIXED.' + k + '.' + f); });
+    });
+    check('every rung has name, gate, how, cue and avoid', gaps.length === 0, gaps.slice(0, 4).join(', '));
+    check('76 rungs across 11 ladders', rungCount === 76 && Object.keys(CAL.LADDERS).length === 11,
+          rungCount + ' rungs / ' + Object.keys(CAL.LADDERS).length + ' ladders');
+
+    const noGuide = [];
+    CAL.PHASES.forEach(p => Object.keys(p.sessions).forEach(l =>
+      p.sessions[l].items.forEach(it => { if (!CAL.guide(it.k, {})) noGuide.push(p.name + '/' + l + '/' + it.k); })));
+    check('every programmed exercise has instructions', noGuide.length === 0, noGuide.join(', '));
+
+    // library page: generated, static, and matching the data
+    {
+      const d = loaded['exercises.html'].window.document;
+      check('library renders all 76 rungs', d.querySelectorAll('.rung-how').length === 76,
+            String(d.querySelectorAll('.rung-how').length));
+      check('every rung shows a cue', d.querySelectorAll('.ladder .cue-line').length === 76,
+            String(d.querySelectorAll('.ladder .cue-line').length));
+      const text = d.body.textContent;
+      check('library text comes from the data',
+            text.includes(CAL.LADDERS.push.rungs[5].how.slice(0, 60)) &&
+            text.includes(CAL.LADDERS.vpull.rungs[0].cue.slice(0, 40)));
+      check('instructions are static, not JS-rendered',
+            /Setup &amp; execution/.test(require('fs').readFileSync(path.join(ROOT, 'exercises.html'), 'utf8')));
+      check('front lever ladder left hand-written', /Tuck front lever/.test(text));
+    }
+
+    // runner: instructions for the rung you are actually on
+    {
+      const w = loaded['today.html'].window, d = w.document;
+      const rows = d.querySelectorAll('.ex-row');
+      check('every exercise row carries a how-to', d.querySelectorAll('.ex-row .howto').length === rows.length,
+            d.querySelectorAll('.ex-row .howto').length + ' of ' + rows.length);
+      check('how-to shows cue and avoid', d.querySelector('.howto .cue') && d.querySelector('.howto .avoid'));
+      const btn = d.getElementById('btn-how');
+      btn.dispatchEvent(new w.Event('click', { bubbles: true }));
+      check('show-all opens every how-to',
+            Array.prototype.every.call(d.querySelectorAll('details.howto'), x => x.open));
+      check('button flips to hide', /Hide all/.test(btn.textContent), btn.textContent);
+      btn.dispatchEvent(new w.Event('click', { bubbles: true }));
+      check('and closes them again',
+            Array.prototype.every.call(d.querySelectorAll('details.howto'), x => !x.open));
+    }
+
+    // cards: one cue per exercise, so paper is still usable
+    {
+      const d = loaded['cards.html'].window.document;
+      const cues = d.querySelectorAll('#cards .card-sheet .cue');
+      check('printed cards carry cues', cues.length > 15, String(cues.length));
+      check('printed cue text is real', cues[0].textContent.length > 20, cues[0].textContent.slice(0, 50));
+    }
+
+    // and the instructions are searchable
+    {
+      const idx = JSON.parse(require('fs').readFileSync(path.join(ROOT, 'assets/search-index.json'), 'utf8'));
+      const all = idx.records.map(r => r.t).join(' ');
+      check('search index contains the instructions',
+            all.includes(CAL.LADDERS.squat.rungs[3].cue.slice(0, 40)),
+            'looking for: ' + CAL.LADDERS.squat.rungs[3].cue.slice(0, 40));
+    }
+  }
+
   console.log('\n=== shared behavior ===');
   {
     const w = loaded['goals.html'].window, d = w.document;

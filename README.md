@@ -41,7 +41,9 @@ _partials/live.py        smoke-tests the published site
 build.sh                 rebuilds every page, the search index, sw.js, sitemap.xml, robots.txt
 assets/style.css         all styling (design tokens at the top, light + dark)
 assets/site.js           theme, nav, checklists, "/" search shortcut, SW registration
-assets/program-data.js   the 24-week program and all eleven ladders, as data
+assets/program-data.js   the 24-week program and all eleven ladders, as data —
+                         every rung carries how / cue / avoid
+_partials/mkladders.js   regenerates the ladders on exercises.html from that data
 assets/images/           photography and session illustrations
 .nojekyll                tells GitHub Pages to serve the files as-is
 ```
@@ -132,6 +134,30 @@ python3 -m http.server 8000
 ```
 
 Then open <http://localhost:8000>.
+
+## Where exercise instructions live
+
+`assets/program-data.js` is the single source of truth for every movement: all
+eleven ladders, 76 rungs, and seven accessories, each with
+
+- `n` — the name
+- `gate` — the performance that earns the next rung
+- `how` — setup and execution, in the order you do them
+- `cue` — the one thing that matters while you are doing it
+- `avoid` — the mistake people actually make on that specific rung
+
+Three surfaces consume it, so they cannot drift apart:
+
+- **`exercises.html`** — `_partials/mkladders.js` regenerates the ladders into
+  the page between `<!-- LADDER:key -->` markers, as *static* HTML so it works
+  without JavaScript and gets picked up by the search index. `build.sh` runs it
+  first; edit the data, never the generated markup. The front lever and
+  muscle-up ladders have no data entry and are left hand-written.
+- **`today.html`** — a "How to do it" disclosure on each exercise, showing the
+  instructions for the rung you are actually on.
+- **`cards.html`** — the one-line cue, printed under each exercise name.
+
+Adding a rung means adding one object to the data and rerunning `./build.sh`.
 
 ## Handoff notes for the visual pass
 
