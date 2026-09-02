@@ -6,7 +6,7 @@
     "build": "./build.sh",
     "check": "python3 _partials/check.py",
     "test": "node _partials/test.js",
-    "verify": "./build.sh && python3 _partials/check.py && node _partials/test.js",
+    "verify": "./build.sh && python3 _partials/check.py && python3 _partials/check-food.py && node _partials/test.js",
     "live": "python3 _partials/live.py",
     "serve": "python3 -m http.server 8000"
   },

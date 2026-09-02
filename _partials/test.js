@@ -603,6 +603,81 @@ async function load(page) {
             c.querySelectorAll('tbody tr').length === 7));
   }
 
+  console.log('\n=== food tables & day builder ===');
+  {
+    const w = loaded['nutrition.html'].window, d = w.document;
+    const click = id => d.getElementById(id).dispatchEvent(new w.Event('click', { bubbles: true }));
+    // An earlier block left the calculator on female/cut; the builder reads its
+    // output live, so put it back to the site's default before judging totals.
+    [['n-sex', 'm'], ['n-goal', 'lean'], ['n-age', '20'], ['n-wt', '150']].forEach(([id, v]) => {
+      const el = d.getElementById(id);
+      el.value = v; el.dispatchEvent(new w.Event('change', { bubbles: true }));
+    });
+    const path = require('path');
+    delete require.cache[require.resolve(path.join(ROOT, 'assets/food-data.js'))];
+    global.window = global.window || {};
+    require(path.join(ROOT, 'assets/food-data.js'));
+    const FOODS = global.window.FOODS;
+
+    // tables are generated, static, and complete
+    check('42 foods in the data', FOODS.all.length === 42, String(FOODS.all.length));
+    const missing = FOODS.all.filter(f => ['n', 'serving', 'note'].some(k => !f[k]) ||
+      ['cal', 'p', 'c', 'f'].some(k => typeof f[k] !== 'number'));
+    check('every food has a full macro breakdown', missing.length === 0, missing.map(f => f.n).join(', '));
+    check('tables render every row',
+          d.querySelectorAll('#builder') && [...d.querySelectorAll('table')].some(t => /Chicken breast/.test(t.textContent)));
+    check('protein table shows carbs and fat too',
+          /Chicken breast[\s\S]{0,120}0 g[\s\S]{0,40}6 g/.test(d.body.textContent));
+    check('food tables are static, not JS-rendered',
+          /Canned sardines/.test(require('fs').readFileSync(path.join(ROOT, 'nutrition.html'), 'utf8')));
+
+    // builder
+    const sel = d.getElementById('b-food');
+    check('builder lists every food', sel.querySelectorAll('option').length === 42,
+          String(sel.querySelectorAll('option').length));
+    check('builder groups by macro', sel.querySelectorAll('optgroup').length === 3);
+    check('builder starts empty', /Nothing added yet/.test(d.getElementById('b-table').textContent));
+
+    sel.value = 'protein-0';                       // chicken breast, 54 g protein
+    d.getElementById('b-qty').value = '2';
+    click('b-add');
+    check('adding a food updates the table', /Chicken breast/.test(d.getElementById('b-table').textContent));
+    check('quantity is applied', /108/.test(d.getElementById('b-table').textContent),
+          d.getElementById('b-table').textContent.slice(0, 120));
+    check('totals show a protein bar', /Protein/.test(d.getElementById('b-totals').textContent));
+    check('remaining protein is computed', /to go/.test(d.getElementById('b-totals').textContent),
+          d.getElementById('b-totals').textContent.slice(0, 140));
+    check('verdict flags short protein first', /Protein is short/.test(d.getElementById('b-verdict').textContent),
+          d.getElementById('b-verdict').textContent.slice(0, 60));
+
+    // adding the same food again merges rather than duplicating
+    click('b-add');
+    check('repeat adds merge into one row',
+          d.getElementById('b-table').querySelectorAll('tbody tr').length === 2,  // item + total
+          String(d.getElementById('b-table').querySelectorAll('tbody tr').length));
+
+    d.querySelector('[data-less]').dispatchEvent(new w.Event('click', { bubbles: true }));
+    check('minus reduces the serving', /3\.75 ×/.test(d.getElementById('b-table').textContent),
+          d.getElementById('b-table').textContent.slice(0, 100));
+    d.querySelector('[data-drop]').dispatchEvent(new w.Event('click', { bubbles: true }));
+    check('remove empties the day', /Nothing added yet/.test(d.getElementById('b-table').textContent));
+
+    click('b-sample');
+    const totalsText = d.getElementById('b-totals').textContent;
+    check('sample day loads', d.getElementById('b-table').querySelectorAll('tbody tr').length > 10,
+          String(d.getElementById('b-table').querySelectorAll('tbody tr').length));
+    const cals = parseInt((totalsText.match(/(\d+) \/ \d+ kcal/) || [0, 0])[1], 10);
+    check('sample day lands near the calorie target', cals > 2300 && cals < 3300, String(cals));
+    const prot = parseInt((totalsText.match(/(\d+) \/ \d+ g/) || [0, 0])[1], 10);
+    check('sample day clears the protein target', prot >= 150, String(prot));
+    check('verdict approves a complete day', /works|calories are/.test(d.getElementById('b-verdict').textContent),
+          d.getElementById('b-verdict').textContent.slice(0, 70));
+
+    check('the day persists', JSON.parse(w.localStorage.getItem('cal-day')).length > 10);
+    click('b-clear');
+    check('clear empties it', JSON.parse(w.localStorage.getItem('cal-day')).length === 0);
+  }
+
   console.log('\n=== exercise instructions ===');
   {
     // The data is the single source of truth for the library, the runner and the cards.

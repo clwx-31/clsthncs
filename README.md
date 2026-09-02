@@ -44,6 +44,10 @@ assets/site.js           theme, nav, checklists, "/" search shortcut, SW registr
 assets/program-data.js   the 24-week program and all eleven ladders, as data —
                          every rung carries how / cue / avoid
 _partials/mkladders.js   regenerates the ladders on exercises.html from that data
+assets/food-data.js      42 foods with full macros, feeding the tables and the
+                         day builder on nutrition.html
+_partials/mkfoods.js     regenerates those tables from the data
+_partials/check-food.py  holds every food row to macro/calorie arithmetic
 assets/images/           photography and session illustrations
 .nojekyll                tells GitHub Pages to serve the files as-is
 ```
@@ -52,7 +56,7 @@ Verify before committing:
 
 ```sh
 npm install          # once — pulls jsdom for the test harness
-npm run verify       # build + static checks + behavior tests
+npm run verify       # build + static checks + food arithmetic + behavior tests
 ```
 
 `npm run verify` runs three things:
@@ -158,6 +162,12 @@ Three surfaces consume it, so they cannot drift apart:
 - **`cards.html`** — the one-line cue, printed under each exercise name.
 
 Adding a rung means adding one object to the data and rerunning `./build.sh`.
+
+`assets/food-data.js` works the same way: 42 foods with calories and all three
+macros per serving, generating the three tables on `nutrition.html` via
+`_partials/mkfoods.js` and driving the day builder on that page.
+`_partials/check-food.py` fails the build if any row's macros stop reconciling
+with its calories, which is how a transposed digit gets caught.
 
 ## Handoff notes for the visual pass
 

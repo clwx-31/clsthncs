@@ -11,8 +11,9 @@ build() { _partials/mk.sh "$1" "$2" "$3" "_partials/body/$1"; }
 # without node still produces a correct site, just without picking up data edits.
 if command -v node >/dev/null 2>&1; then
   node _partials/mkladders.js
+  node _partials/mkfoods.js
 else
-  echo "node not found — skipping ladder regeneration (using committed markup)"
+  echo "node not found — skipping ladder and food-table regeneration (using committed markup)"
 fi
 
 build index.html        "Start Here"        "A complete beginner's guide to calisthenics, built for a 5'9\" 150 lb lifter training three days a week with no equipment."

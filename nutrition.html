@@ -70,6 +70,7 @@
     <li><a href="#fiber">Fiber, vegetables, micronutrients</a></li>
     <li><a href="#foods">Food lists with numbers</a></li>
     <li><a href="#day">A sample 2,800-calorie day</a></li>
+    <li><a href="#builder">Build your own day</a></li>
     <li><a href="#grocery">The grocery list</a></li>
     <li><a href="#appetite">When you can&#39;t eat that much</a></li>
     <li><a href="#tracking">How to track without going crazy</a></li>
@@ -124,6 +125,7 @@
   </div>
 </div>
 
+<script src="assets/food-data.js"></script>
 <script>
 (function(){
   function $(id){return document.getElementById(id);}
@@ -259,75 +261,81 @@
 
 <h3>Protein sources</h3>
 
+<!-- FOODS:protein -->
 <div class="table-wrap">
 <table>
-<thead><tr><th>Food</th><th>Serving</th><th class="num">Protein</th><th class="num">Calories</th><th>Notes</th></tr></thead>
+<thead><tr><th>Food</th><th>Serving</th><th class="num">Cal</th><th class="num"><strong>Protein</strong></th><th class="num">Carbs</th><th class="num">Fat</th><th>Notes</th></tr></thead>
 <tbody>
-<tr><td>Chicken breast</td><td>6 oz cooked</td><td class="num">54 g</td><td class="num">280</td><td>Best protein-per-calorie ratio in the aisle.</td></tr>
-<tr><td>Chicken thigh</td><td>6 oz cooked</td><td class="num">44 g</td><td class="num">370</td><td>Cheaper, better flavor, harder to overcook.</td></tr>
-<tr><td>Ground beef, 93/7</td><td>6 oz cooked</td><td class="num">46 g</td><td class="num">330</td><td>Iron, zinc, creatine.</td></tr>
-<tr><td>Ground turkey, 93/7</td><td>6 oz cooked</td><td class="num">45 g</td><td class="num">310</td><td>Interchangeable with beef.</td></tr>
-<tr><td>Salmon</td><td>6 oz cooked</td><td class="num">40 g</td><td class="num">370</td><td>Omega-3s. Worth 2×/week.</td></tr>
-<tr><td>Canned tuna, in water</td><td>1 can (5 oz)</td><td class="num">27 g</td><td class="num">120</td><td>Cheapest lean protein there is. Cap at ~3 cans/week for mercury.</td></tr>
-<tr><td>Canned sardines</td><td>1 can (3.75 oz)</td><td class="num">22 g</td><td class="num">190</td><td>Omega-3s, calcium, vitamin D. Very cheap.</td></tr>
-<tr><td>Eggs</td><td>3 large</td><td class="num">19 g</td><td class="num">215</td><td>Eat the yolks — that&#39;s where the micronutrients are.</td></tr>
-<tr><td>Egg whites</td><td>1 cup</td><td class="num">26 g</td><td class="num">125</td><td>Pure protein when you need it without calories.</td></tr>
-<tr><td>Greek yogurt, nonfat</td><td>1 cup (8 oz)</td><td class="num">23 g</td><td class="num">130</td><td>Great before bed. Buy plain and add your own fruit.</td></tr>
-<tr><td>Cottage cheese, 2%</td><td>1 cup</td><td class="num">24 g</td><td class="num">180</td><td>Slow-digesting casein. The classic pre-bed food.</td></tr>
-<tr><td>Whole milk</td><td>16 oz</td><td class="num">16 g</td><td class="num">300</td><td>The easiest 300 calories you will ever consume.</td></tr>
-<tr><td>Whey protein powder</td><td>1 scoop (~30 g)</td><td class="num">24 g</td><td class="num">120</td><td>Convenience, not magic. Useful for hitting the target.</td></tr>
-<tr><td>Tofu, firm</td><td>6 oz</td><td class="num">17 g</td><td class="num">180</td><td>Complete plant protein.</td></tr>
-<tr><td>Tempeh</td><td>4 oz</td><td class="num">21 g</td><td class="num">220</td><td>Higher protein than tofu, nuttier.</td></tr>
-<tr><td>Lentils, cooked</td><td>1 cup</td><td class="num">18 g</td><td class="num">230</td><td>Protein + 16 g fiber. Extremely cheap.</td></tr>
-<tr><td>Black beans, cooked</td><td>1 cup</td><td class="num">15 g</td><td class="num">225</td><td>Same deal.</td></tr>
-<tr><td>Edamame</td><td>1 cup shelled</td><td class="num">18 g</td><td class="num">190</td><td>Best plant protein snack.</td></tr>
-<tr><td>Shrimp</td><td>6 oz cooked</td><td class="num">36 g</td><td class="num">170</td><td>Very lean, cooks in 3 minutes.</td></tr>
-<tr><td>Pork loin</td><td>6 oz cooked</td><td class="num">46 g</td><td class="num">310</td><td>Underrated and usually cheap.</td></tr>
-<tr><td>String cheese</td><td>2 sticks</td><td class="num">14 g</td><td class="num">160</td><td>Portable, no prep.</td></tr>
-<tr><td>Beef jerky</td><td>2 oz</td><td class="num">22 g</td><td class="num">180</td><td>Expensive per gram, but travels anywhere.</td></tr>
+    <tr><td>Chicken breast</td><td>6 oz cooked</td><td class="num">280</td><td class="num"><strong>54 g</strong></td><td class="num">0 g</td><td class="num">6 g</td><td>Best protein-per-calorie ratio in the aisle.</td></tr>
+    <tr><td>Chicken thigh</td><td>6 oz cooked</td><td class="num">370</td><td class="num"><strong>44 g</strong></td><td class="num">0 g</td><td class="num">20 g</td><td>Cheaper, better flavour, harder to overcook.</td></tr>
+    <tr><td>Ground beef, 93/7</td><td>6 oz cooked</td><td class="num">330</td><td class="num"><strong>46 g</strong></td><td class="num">0 g</td><td class="num">15 g</td><td>Iron, zinc, creatine.</td></tr>
+    <tr><td>Ground turkey, 93/7</td><td>6 oz cooked</td><td class="num">310</td><td class="num"><strong>45 g</strong></td><td class="num">0 g</td><td class="num">14 g</td><td>Interchangeable with beef.</td></tr>
+    <tr><td>Salmon</td><td>6 oz cooked</td><td class="num">370</td><td class="num"><strong>40 g</strong></td><td class="num">0 g</td><td class="num">22 g</td><td>Omega-3s. Worth twice a week.</td></tr>
+    <tr><td>Canned tuna, in water</td><td>1 can (5 oz)</td><td class="num">120</td><td class="num"><strong>27 g</strong></td><td class="num">0 g</td><td class="num">1 g</td><td>Cheapest lean protein there is. Cap at ~3 cans/week for mercury.</td></tr>
+    <tr><td>Canned sardines</td><td>1 can (3.75 oz)</td><td class="num">190</td><td class="num"><strong>22 g</strong></td><td class="num">0 g</td><td class="num">11 g</td><td>Omega-3s, calcium, vitamin D. Very cheap.</td></tr>
+    <tr><td>Eggs</td><td>3 large</td><td class="num">215</td><td class="num"><strong>19 g</strong></td><td class="num">1 g</td><td class="num">15 g</td><td>Eat the yolks — that is where the micronutrients are.</td></tr>
+    <tr><td>Egg whites</td><td>1 cup</td><td class="num">120</td><td class="num"><strong>26 g</strong></td><td class="num">2 g</td><td class="num">0 g</td><td>Pure protein when you need it without the calories.</td></tr>
+    <tr><td>Greek yogurt, nonfat</td><td>1 cup (8 oz)</td><td class="num">130</td><td class="num"><strong>23 g</strong></td><td class="num">9 g</td><td class="num">0 g</td><td>Great before bed. Buy plain and add your own fruit.</td></tr>
+    <tr><td>Cottage cheese, 2%</td><td>1 cup</td><td class="num">180</td><td class="num"><strong>24 g</strong></td><td class="num">10 g</td><td class="num">5 g</td><td>Slow-digesting casein. The classic pre-bed food.</td></tr>
+    <tr><td>Whole milk</td><td>16 oz</td><td class="num">300</td><td class="num"><strong>16 g</strong></td><td class="num">24 g</td><td class="num">16 g</td><td>The easiest 300 calories you will ever consume.</td></tr>
+    <tr><td>Whey protein powder</td><td>1 scoop (~30 g)</td><td class="num">120</td><td class="num"><strong>24 g</strong></td><td class="num">3 g</td><td class="num">1 g</td><td>Convenience, not magic. Useful for hitting the target.</td></tr>
+    <tr><td>Tofu, firm</td><td>6 oz</td><td class="num">160</td><td class="num"><strong>17 g</strong></td><td class="num">4 g</td><td class="num">9 g</td><td>Complete plant protein.</td></tr>
+    <tr><td>Tempeh</td><td>4 oz</td><td class="num">220</td><td class="num"><strong>21 g</strong></td><td class="num">10 g</td><td class="num">12 g</td><td>Higher protein than tofu, nuttier.</td></tr>
+    <tr><td>Lentils, cooked</td><td>1 cup</td><td class="num">230</td><td class="num"><strong>18 g</strong></td><td class="num">40 g</td><td class="num">1 g</td><td>Protein plus 16 g of fibre. Extremely cheap.</td></tr>
+    <tr><td>Black beans, cooked</td><td>1 cup</td><td class="num">225</td><td class="num"><strong>15 g</strong></td><td class="num">41 g</td><td class="num">1 g</td><td>Same deal.</td></tr>
+    <tr><td>Edamame</td><td>1 cup shelled</td><td class="num">190</td><td class="num"><strong>18 g</strong></td><td class="num">14 g</td><td class="num">8 g</td><td>Best plant protein snack.</td></tr>
+    <tr><td>Shrimp</td><td>6 oz cooked</td><td class="num">170</td><td class="num"><strong>36 g</strong></td><td class="num">2 g</td><td class="num">2 g</td><td>Very lean, cooks in three minutes.</td></tr>
+    <tr><td>Pork loin</td><td>6 oz cooked</td><td class="num">310</td><td class="num"><strong>46 g</strong></td><td class="num">0 g</td><td class="num">13 g</td><td>Underrated and usually cheap.</td></tr>
+    <tr><td>String cheese</td><td>2 sticks</td><td class="num">160</td><td class="num"><strong>14 g</strong></td><td class="num">2 g</td><td class="num">11 g</td><td>Portable, no prep.</td></tr>
+    <tr><td>Beef jerky</td><td>2 oz</td><td class="num">180</td><td class="num"><strong>22 g</strong></td><td class="num">12 g</td><td class="num">4 g</td><td>Expensive per gram, but travels anywhere.</td></tr>
 </tbody>
 </table>
 </div>
+<!-- /FOODS:protein -->
 
 <h3>Carbohydrate sources</h3>
 
+<!-- FOODS:carb -->
 <div class="table-wrap">
 <table>
-<thead><tr><th>Food</th><th>Serving</th><th class="num">Carbs</th><th class="num">Calories</th><th>Notes</th></tr></thead>
+<thead><tr><th>Food</th><th>Serving</th><th class="num">Cal</th><th class="num">Protein</th><th class="num"><strong>Carbs</strong></th><th class="num">Fat</th><th>Notes</th></tr></thead>
 <tbody>
-<tr><td>White rice, cooked</td><td>1 cup</td><td class="num">45 g</td><td class="num">205</td><td>Easy to digest, easy to eat a lot of. Bulking staple.</td></tr>
-<tr><td>Brown rice, cooked</td><td>1 cup</td><td class="num">45 g</td><td class="num">215</td><td>More fiber, more filling — which can work against you when bulking.</td></tr>
-<tr><td>Oats, dry</td><td>1 cup</td><td class="num">54 g</td><td class="num">305</td><td>Fiber, cheap, blends into shakes.</td></tr>
-<tr><td>Pasta, cooked</td><td>2 cups</td><td class="num">86 g</td><td class="num">440</td><td>Easiest large carb load in existence.</td></tr>
-<tr><td>Potato, baked</td><td>1 large (10 oz)</td><td class="num">64 g</td><td class="num">280</td><td>Potassium, vitamin C, very satiating.</td></tr>
-<tr><td>Sweet potato</td><td>1 large</td><td class="num">37 g</td><td class="num">160</td><td>Vitamin A. Not meaningfully &quot;better&quot; than a white potato.</td></tr>
-<tr><td>Whole wheat bread</td><td>2 slices</td><td class="num">28 g</td><td class="num">160</td><td>Convenience.</td></tr>
-<tr><td>Bagel</td><td>1 large</td><td class="num">55 g</td><td class="num">290</td><td>Dense carbs with almost no fullness cost.</td></tr>
-<tr><td>Banana</td><td>1 medium</td><td class="num">27 g</td><td class="num">105</td><td>Portable pre-workout carb.</td></tr>
-<tr><td>Tortillas, flour</td><td>2 large</td><td class="num">50 g</td><td class="num">300</td><td>Turns anything into a meal.</td></tr>
-<tr><td>Granola</td><td>1/2 cup</td><td class="num">37 g</td><td class="num">250</td><td>Calorie-dense. Easy to accidentally eat 800 calories of.</td></tr>
-<tr><td>Dried fruit (dates, raisins)</td><td>1/4 cup</td><td class="num">30 g</td><td class="num">120</td><td>Concentrated calories in a tiny volume.</td></tr>
+    <tr><td>White rice, cooked</td><td>1 cup</td><td class="num">205</td><td class="num">4 g</td><td class="num"><strong>45 g</strong></td><td class="num">0 g</td><td>Easy to digest, easy to eat a lot of. Bulking staple.</td></tr>
+    <tr><td>Brown rice, cooked</td><td>1 cup</td><td class="num">215</td><td class="num">5 g</td><td class="num"><strong>45 g</strong></td><td class="num">2 g</td><td>More fibre, more filling — which can work against you when bulking.</td></tr>
+    <tr><td>Oats, dry</td><td>1 cup</td><td class="num">305</td><td class="num">11 g</td><td class="num"><strong>54 g</strong></td><td class="num">5 g</td><td>Fibre, cheap, blends into shakes.</td></tr>
+    <tr><td>Pasta, cooked</td><td>2 cups</td><td class="num">440</td><td class="num">16 g</td><td class="num"><strong>86 g</strong></td><td class="num">3 g</td><td>Easiest large carb load in existence.</td></tr>
+    <tr><td>Potato, baked</td><td>1 large (10 oz)</td><td class="num">280</td><td class="num">8 g</td><td class="num"><strong>64 g</strong></td><td class="num">0 g</td><td>Potassium, vitamin C, very satiating.</td></tr>
+    <tr><td>Sweet potato</td><td>1 large</td><td class="num">160</td><td class="num">4 g</td><td class="num"><strong>37 g</strong></td><td class="num">0 g</td><td>Vitamin A. Not meaningfully better than a white potato.</td></tr>
+    <tr><td>Whole wheat bread</td><td>2 slices</td><td class="num">160</td><td class="num">8 g</td><td class="num"><strong>28 g</strong></td><td class="num">2 g</td><td>Convenience.</td></tr>
+    <tr><td>Bagel</td><td>1 large</td><td class="num">290</td><td class="num">11 g</td><td class="num"><strong>55 g</strong></td><td class="num">2 g</td><td>Dense carbs with almost no fullness cost.</td></tr>
+    <tr><td>Banana</td><td>1 medium</td><td class="num">105</td><td class="num">1 g</td><td class="num"><strong>27 g</strong></td><td class="num">0 g</td><td>Portable pre-workout carb.</td></tr>
+    <tr><td>Tortillas, flour</td><td>2 large</td><td class="num">300</td><td class="num">8 g</td><td class="num"><strong>50 g</strong></td><td class="num">8 g</td><td>Turns anything into a meal.</td></tr>
+    <tr><td>Granola</td><td>1/2 cup</td><td class="num">250</td><td class="num">6 g</td><td class="num"><strong>37 g</strong></td><td class="num">9 g</td><td>Calorie-dense. Easy to accidentally eat 800 calories of.</td></tr>
+    <tr><td>Dried fruit (dates, raisins)</td><td>1/4 cup</td><td class="num">120</td><td class="num">1 g</td><td class="num"><strong>30 g</strong></td><td class="num">0 g</td><td>Concentrated calories in a tiny volume.</td></tr>
 </tbody>
 </table>
 </div>
+<!-- /FOODS:carb -->
 
 <h3>Fat sources</h3>
 
+<!-- FOODS:fat -->
 <div class="table-wrap">
 <table>
-<thead><tr><th>Food</th><th>Serving</th><th class="num">Fat</th><th class="num">Calories</th><th>Notes</th></tr></thead>
+<thead><tr><th>Food</th><th>Serving</th><th class="num">Cal</th><th class="num">Protein</th><th class="num">Carbs</th><th class="num"><strong>Fat</strong></th><th>Notes</th></tr></thead>
 <tbody>
-<tr><td>Peanut butter</td><td>2 tbsp</td><td class="num">16 g</td><td class="num">190</td><td>8 g protein too. The bulking beginner&#39;s best friend.</td></tr>
-<tr><td>Olive oil</td><td>1 tbsp</td><td class="num">14 g</td><td class="num">120</td><td>Drizzle on anything to add 120 calories invisibly.</td></tr>
-<tr><td>Almonds</td><td>1 oz (23 nuts)</td><td class="num">14 g</td><td class="num">165</td><td>Vitamin E, magnesium.</td></tr>
-<tr><td>Walnuts</td><td>1 oz</td><td class="num">18 g</td><td class="num">185</td><td>Best nut for omega-3s.</td></tr>
-<tr><td>Avocado</td><td>1 medium</td><td class="num">22 g</td><td class="num">240</td><td>Potassium and fiber.</td></tr>
-<tr><td>Cheddar cheese</td><td>2 oz</td><td class="num">19 g</td><td class="num">230</td><td>Also 14 g protein.</td></tr>
-<tr><td>Chia / flax seeds</td><td>2 tbsp</td><td class="num">9 g</td><td class="num">140</td><td>Omega-3s and a lot of fiber.</td></tr>
-<tr><td>Whole eggs</td><td>3 large</td><td class="num">15 g</td><td class="num">215</td><td>Choline, vitamin D, and the yolk&#39;s micronutrients.</td></tr>
+    <tr><td>Peanut butter</td><td>2 tbsp</td><td class="num">190</td><td class="num">8 g</td><td class="num">7 g</td><td class="num"><strong>16 g</strong></td><td>The bulking beginner's best friend.</td></tr>
+    <tr><td>Olive oil</td><td>1 tbsp</td><td class="num">120</td><td class="num">0 g</td><td class="num">0 g</td><td class="num"><strong>14 g</strong></td><td>Drizzle on anything to add 120 calories invisibly.</td></tr>
+    <tr><td>Almonds</td><td>1 oz (23 nuts)</td><td class="num">165</td><td class="num">6 g</td><td class="num">6 g</td><td class="num"><strong>14 g</strong></td><td>Vitamin E, magnesium.</td></tr>
+    <tr><td>Walnuts</td><td>1 oz</td><td class="num">185</td><td class="num">4 g</td><td class="num">4 g</td><td class="num"><strong>18 g</strong></td><td>Best nut for omega-3s.</td></tr>
+    <tr><td>Avocado</td><td>1 medium</td><td class="num">240</td><td class="num">3 g</td><td class="num">13 g</td><td class="num"><strong>22 g</strong></td><td>Potassium and fibre.</td></tr>
+    <tr><td>Cheddar cheese</td><td>2 oz</td><td class="num">230</td><td class="num">14 g</td><td class="num">2 g</td><td class="num"><strong>19 g</strong></td><td>Also 14 g of protein.</td></tr>
+    <tr><td>Chia / flax seeds</td><td>2 tbsp</td><td class="num">140</td><td class="num">5 g</td><td class="num">10 g</td><td class="num"><strong>9 g</strong></td><td>Omega-3s and a lot of fibre.</td></tr>
+    <tr><td>Whole eggs</td><td>3 large</td><td class="num">215</td><td class="num">19 g</td><td class="num">1 g</td><td class="num"><strong>15 g</strong></td><td>Choline, vitamin D, and the yolk's micronutrients.</td></tr>
 </tbody>
 </table>
 </div>
+<!-- /FOODS:fat -->
 
 <h2 id="day">A sample 2,800-calorie day</h2>
 
@@ -364,6 +372,32 @@
 
 <h3>Vegetarian version</h3>
 <p>Breakfast: oats with milk, peanut butter, whey. Lunch: lentil and rice bowl with feta and olive oil. Snack: Greek yogurt with granola. Dinner: tofu or tempeh stir-fry with rice and edamame. Before bed: cottage cheese. Add a pea/rice protein blend to close the gap, and aim about 20% higher on total protein.</p>
+
+<h2 id="builder">Build your own day</h2>
+
+<p>The sample above is one way to hit the numbers. This is for building your own out of food you actually eat. Everything comes from the tables above, so the arithmetic is the same arithmetic — you are just not doing it on paper.</p>
+
+<div class="card">
+  <div class="field-row">
+    <div class="field"><label for="b-food">Food</label><select id="b-food"></select></div>
+    <div class="field"><label for="b-qty">Servings</label><input id="b-qty" type="number" min="0.25" step="0.25" value="1"></div>
+    <div class="field" style="display:flex;align-items:flex-end"><button class="btn" type="button" id="b-add" style="width:100%">Add to the day</button></div>
+  </div>
+  <p style="font-size:.85rem;color:var(--text-muted);margin:0">Servings take quarters — 1.5 chicken breasts, 0.5 cup of oats. Your targets come from <a href="#calculator">the calculator</a> at the top of this page, so change your age or sex there and this follows.</p>
+</div>
+
+<div class="grid grid-3" id="b-totals"></div>
+
+<div class="card">
+  <h3>The day so far</h3>
+  <div class="table-wrap" id="b-table" style="margin-bottom:1rem"></div>
+  <div class="btn-row" style="margin-bottom:0">
+    <button class="btn ghost" type="button" id="b-sample">Load the sample day</button>
+    <button class="btn ghost" type="button" id="b-clear">Clear the day</button>
+  </div>
+</div>
+
+<p id="b-verdict" style="font-size:.95rem"></p>
 
 <h2 id="grocery">The standing grocery list</h2>
 
@@ -496,6 +530,149 @@
   <a href="recovery.html"><span class="k">Next</span><span class="t">Recovery &amp; injury →</span></a>
 </div>
 
+
+<script>
+(function () {
+  var F = window.FOODS;
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function load() { try { return JSON.parse(localStorage.getItem('cal-day') || '[]'); } catch (e) { return []; } }
+  function save(v) { try { localStorage.setItem('cal-day', JSON.stringify(v)); } catch (e) {} }
+
+  var day = load();
+
+  /* Targets come from the calculator above so the two never disagree. Its
+     output is "2,790 kcal" style, hence the strip. */
+  function targets() {
+    function num(id, fallback) {
+      var el = $(id);
+      var v = el ? parseFloat((el.textContent || '').replace(/[^\d.]/g, '')) : NaN;
+      return isNaN(v) || !v ? fallback : v;
+    }
+    return { cal: num('o-target', 2800), p: num('o-p', 150), c: num('o-c', 375), f: num('o-f', 78) };
+  }
+
+  function totals() {
+    return day.reduce(function (t, item) {
+      var f = F.byId(item.id);
+      if (!f) return t;
+      t.cal += f.cal * item.q; t.p += f.p * item.q; t.c += f.c * item.q; t.f += f.f * item.q;
+      return t;
+    }, { cal: 0, p: 0, c: 0, f: 0 });
+  }
+
+  function bar(label, got, target, unit) {
+    var pct = target ? Math.min(100, got / target * 100) : 0;
+    var left = target - got;
+    var over = left < 0;
+    return '<div class="stat">' +
+      '<div class="k">' + esc(label) + '</div>' +
+      '<div class="v">' + Math.round(got) + ' <small>/ ' + Math.round(target) + ' ' + esc(unit) + '</small></div>' +
+      '<div class="bar-track" style="margin:.4rem 0 .45rem"><div class="bar-fill" style="width:' + pct.toFixed(1) + '%' +
+        (over ? ';background:var(--warn)' : '') + '"></div></div>' +
+      '<div class="d">' + (over ? Math.round(-left) + ' ' + esc(unit) + ' over' : Math.round(left) + ' ' + esc(unit) + ' to go') + '</div>' +
+      '</div>';
+  }
+
+  function render() {
+    var t = targets(), got = totals();
+    $('b-totals').innerHTML =
+      bar('Calories', got.cal, t.cal, 'kcal') +
+      bar('Protein', got.p, t.p, 'g') +
+      bar('Carbohydrate', got.c, t.c, 'g') +
+      bar('Fat', got.f, t.f, 'g');
+
+    $('b-table').innerHTML = day.length
+      ? '<table><thead><tr><th>Food</th><th>Amount</th><th class="num">Cal</th><th class="num">P</th><th class="num">C</th><th class="num">F</th><th></th></tr></thead><tbody>' +
+        day.map(function (item, i) {
+          var f = F.byId(item.id);
+          if (!f) return '';
+          return '<tr><td>' + esc(f.n) + '</td>' +
+            '<td>' + item.q + ' × ' + esc(f.serving) + '</td>' +
+            '<td class="num">' + Math.round(f.cal * item.q) + '</td>' +
+            '<td class="num">' + Math.round(f.p * item.q) + '</td>' +
+            '<td class="num">' + Math.round(f.c * item.q) + '</td>' +
+            '<td class="num">' + Math.round(f.f * item.q) + '</td>' +
+            '<td><button class="btn ghost" style="padding:.1rem .45rem;font-size:.78rem" data-less="' + i + '" aria-label="Fewer servings">−</button> ' +
+            '<button class="btn ghost" style="padding:.1rem .45rem;font-size:.78rem" data-more="' + i + '" aria-label="More servings">+</button> ' +
+            '<button class="btn ghost" style="padding:.1rem .45rem;font-size:.78rem" data-drop="' + i + '" aria-label="Remove">×</button></td></tr>';
+        }).join('') +
+        '<tr style="font-weight:700;background:var(--bg-sunken)"><td colspan="2">Total</td>' +
+        '<td class="num">' + Math.round(got.cal) + '</td><td class="num">' + Math.round(got.p) + '</td>' +
+        '<td class="num">' + Math.round(got.c) + '</td><td class="num">' + Math.round(got.f) + '</td><td></td></tr>' +
+        '</tbody></table>'
+      : '<p style="color:var(--text-muted);font-size:.9rem;padding:.5rem 0;margin:0">Nothing added yet. Pick something above, or load the sample day and edit it into something you would actually eat.</p>';
+
+    $('b-table').querySelectorAll('[data-more]').forEach(function (b) {
+      b.addEventListener('click', function () { day[+b.getAttribute('data-more')].q += 0.25; save(day); render(); });
+    });
+    $('b-table').querySelectorAll('[data-less]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var i = +b.getAttribute('data-less');
+        day[i].q = Math.max(0.25, day[i].q - 0.25); save(day); render();
+      });
+    });
+    $('b-table').querySelectorAll('[data-drop]').forEach(function (b) {
+      b.addEventListener('click', function () { day.splice(+b.getAttribute('data-drop'), 1); save(day); render(); });
+    });
+
+    /* Protein first, then calories — the order the rest of the site argues for. */
+    var v;
+    if (!day.length) v = '';
+    else if (got.p < t.p * 0.85) v = '<strong style="color:var(--warn)">Protein is short by ' + Math.round(t.p - got.p) + ' g.</strong> Fix this before anything else — it is the number that decides whether the calories become muscle. A cup of Greek yogurt, a can of tuna, or a scoop of whey each close about 25 g.';
+    else if (got.cal < t.cal * 0.9) v = '<strong>Protein is covered, calories are ' + Math.round(t.cal - got.cal) + ' short.</strong> Add the cheap dense stuff: olive oil on the rice, an extra spoon of peanut butter, a glass of whole milk. <a href="#appetite">More ways to do that →</a>';
+    else if (got.cal > t.cal * 1.12) v = '<strong style="color:var(--warn)">' + Math.round(got.cal - t.cal) + ' calories over target.</strong> One day does not matter; a habit of it becomes fat rather than muscle. <a href="#rate">Why the rate matters →</a>';
+    else v = '<strong style="color:var(--good)">That day works.</strong> Protein is covered and the calories land where you want them. If you can eat this comfortably, make it a template and stop calculating.';
+    $('b-verdict').innerHTML = v;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    if (!F) return;
+    var groups = [['protein', 'Protein'], ['carb', 'Carbohydrate'], ['fat', 'Fat']];
+    $('b-food').innerHTML = groups.map(function (g) {
+      return '<optgroup label="' + g[1] + '">' + F[g[0]].map(function (f) {
+        return '<option value="' + esc(f.id) + '">' + esc(f.n) + ' — ' + esc(f.serving) + '</option>';
+      }).join('') + '</optgroup>';
+    }).join('');
+
+    $('b-add').addEventListener('click', function () {
+      var id = $('b-food').value, q = parseFloat($('b-qty').value) || 1;
+      var existing = day.filter(function (d) { return d.id === id; })[0];
+      if (existing) existing.q += q; else day.push({ id: id, q: q });
+      save(day); render();
+    });
+
+    $('b-clear').addEventListener('click', function () { day = []; save(day); render(); });
+
+    $('b-sample').addEventListener('click', function () {
+      // The sample day above, as far as these tables can express it.
+      day = [
+        { id: 'carb-2', q: 1 },      // oats, 1 cup dry
+        { id: 'protein-11', q: 0.5 },// whole milk, 8 oz
+        { id: 'carb-8', q: 1 },      // banana
+        { id: 'fat-0', q: 1 },       // peanut butter
+        { id: 'protein-7', q: 1 },   // 3 eggs
+        { id: 'protein-0', q: 1 },   // chicken breast
+        { id: 'carb-0', q: 1.5 },    // white rice
+        { id: 'protein-16', q: 1 },  // black beans
+        { id: 'fat-1', q: 2 },       // olive oil
+        { id: 'protein-2', q: 0.67 },// ground beef, ~4 oz
+        { id: 'carb-3', q: 1 },      // pasta
+        { id: 'protein-10', q: 1 }   // cottage cheese
+      ];
+      save(day); render();
+    });
+
+    // Recalculating the targets above should move the bars down here.
+    ['n-sex', 'n-age', 'n-ft', 'n-in', 'n-wt', 'n-act', 'n-goal'].forEach(function (id) {
+      var el = $(id);
+      if (el) { el.addEventListener('change', function () { setTimeout(render, 0); }); el.addEventListener('input', function () { setTimeout(render, 0); }); }
+    });
+
+    render();
+  });
+})();
+</script>
 </main>
 <footer class="site-footer">
   <div class="footer-inner">
