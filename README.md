@@ -15,7 +15,7 @@ training three days a week starting with no equipment. All units are US customar
 | `nutrition.html` | Live TDEE/macro calculator, rate of gain, protein/carb/fat guidance, food tables with grams, a sample 2,800 kcal day, grocery list, appetite strategies, hydration, supplements, bulk vs cut |
 | `recovery.html` | Sleep protocol, rest days, DOMS vs injury, pain traffic light, tendon adaptation, the five common calisthenics injuries, mobility routine, stretching, deloads, overtraining |
 | `gear.html` | Tier 0 (free) through Tier 3 shopping list with price ranges and Amazon category search links, pull-up bar comparison and safety checks, what to skip, three sample budgets |
-| `tracker.html` | Browser-local logger: body metrics with a rolling-average chart, workout log with personal bests, baseline-test comparison, JSON/CSV export and import |
+| `tracker.html` | Browser-local logger: body metrics with a rolling-average chart, workout log with personal bests, weekly review, progress photos (IndexedDB, on-device), baseline-test comparison, JSON/CSV export and import |
 | `faq.html` | ~25 FAQs, 15 myths, and a symptom → cause → fix troubleshooting table |
 | `references.html` | Sources for the site's claims, what the evidence does *not* settle, and how the guidance changes by sex, age, and starting point |
 | `rungs.html` | Eleven questions that set your starting rung on every ladder, saved to `cal-rungs` |

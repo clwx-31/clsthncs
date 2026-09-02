@@ -3,7 +3,7 @@
    Source template: _partials/sw.js  ·  Version is a content hash, so a rebuild
    invalidates the old cache automatically. */
 
-var VERSION = 'c77b1ca3e63a';
+var VERSION = '454609b09d68';
 var CACHE = 'calisthenics-' + VERSION;
 /* Required: the site is broken offline without these. If any one fails to
    fetch, install fails and the old cache is kept — which is the right outcome. */

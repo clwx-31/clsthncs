@@ -1,4 +1,18 @@
 <main class="wide" id="content">
+<style>
+  /* Progress photos. Codex: fold into assets/style.css if you like. */
+  .ph-grid { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .ph-item { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--bg-sunken); }
+  .ph-item img { display: block; width: 100%; height: auto; }
+  .ph-meta { padding: .4rem .55rem; font-size: .76rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; gap: .4rem; }
+  .ph-meta b { color: var(--text); font-weight: 650; }
+  .ph-compare { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .ph-compare figure { margin: 0; }
+  .ph-compare img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--border); }
+  .ph-compare figcaption { font-size: .8rem; color: var(--text-muted); margin-top: .35rem; text-align: center; }
+  .ph-empty { color: var(--text-muted); font-size: .9rem; }
+</style>
+
 
 <div class="hero">
   <p class="eyebrow">Tracker</p>
@@ -95,6 +109,56 @@
   <h3>Recent workout entries</h3>
   <div class="field" style="max-width:320px"><label for="k-filter">Filter by exercise</label><input id="k-filter" placeholder="type to filter"></div>
   <div class="table-wrap" id="k-table" style="margin-bottom:0"></div>
+</div>
+
+<h2 id="photos">Progress photos</h2>
+
+<p>The site tells you to photograph yourself every four weeks because you are the person least able to notice your own change. This is where they live. They are stored in <strong>this browser on this device only</strong> — there is no upload, no server, and no account. Nobody but you can see them.</p>
+
+<div class="card" id="photo-unsupported" style="display:none">
+  <p style="margin:0">This browser doesn&#39;t support local image storage, so photo comparison is unavailable here. Everything else on this page still works. Keep your photos in a dated folder on your phone instead — the <a href="goals.html#photos">protocol for taking them</a> matters far more than where they are kept.</p>
+</div>
+
+<div class="card" id="photo-add">
+  <h3>Add a photo</h3>
+  <div class="field-row">
+    <div class="field"><label for="ph-date">Date</label><input id="ph-date" type="date"></div>
+    <div class="field"><label for="ph-pose">Pose</label>
+      <select id="ph-pose">
+        <option value="front">Front, relaxed</option>
+        <option value="side">Side, relaxed</option>
+        <option value="back">Back, relaxed</option>
+        <option value="flexed">Front, flexed</option>
+      </select>
+    </div>
+    <div class="field"><label for="ph-file">Image</label><input id="ph-file" type="file" accept="image/*"></div>
+  </div>
+  <p style="font-size:.85rem;color:var(--text-muted);margin:0 0 .8rem">Images are scaled down to 1200px on the long edge before saving, which keeps them sharp enough to compare without filling up your browser storage. Same spot, same light, same clothing, first thing in the morning — <a href="goals.html#photos">why that matters</a>.</p>
+  <p id="ph-status" role="status" aria-live="polite" style="font-size:.9rem;color:var(--text-muted);margin:0"></p>
+</div>
+
+<div class="card">
+  <h3>Compare</h3>
+  <div class="field-row">
+    <div class="field"><label for="ph-pose-view">Pose</label>
+      <select id="ph-pose-view">
+        <option value="front">Front, relaxed</option>
+        <option value="side">Side, relaxed</option>
+        <option value="back">Back, relaxed</option>
+        <option value="flexed">Front, flexed</option>
+      </select>
+    </div>
+    <div class="field"><label for="ph-a">Earlier</label><select id="ph-a"></select></div>
+    <div class="field"><label for="ph-b">Later</label><select id="ph-b"></select></div>
+  </div>
+  <div id="ph-compare" class="ph-compare"></div>
+  <p id="ph-gap" style="font-size:.9rem;color:var(--text-muted);margin:.6rem 0 0"></p>
+</div>
+
+<div class="card">
+  <h3>All photos</h3>
+  <p style="font-size:.85rem;color:var(--text-muted)">Photos are not included in the JSON backup — they would make the file enormous. Download the ones you want to keep, or back up your phone as usual.</p>
+  <div id="ph-grid" class="ph-grid"></div>
 </div>
 
 <h2 id="review">This week</h2>
@@ -290,6 +354,220 @@
     });
   }
 
+  /* ---------------- progress photos ----------------
+     Images live in IndexedDB, not localStorage — localStorage is a few MB of
+     strings and would fall over on the first photo. Same-origin, on-device,
+     never uploaded. */
+
+  var DB_NAME = 'cal-photos', STORE = 'photos', dbPromise = null;
+  var comparePicked = false;   // true once you choose dates yourself
+  var POSES = { front: 'Front, relaxed', side: 'Side, relaxed', back: 'Back, relaxed', flexed: 'Front, flexed' };
+  var objectUrls = [];
+
+  function photosSupported() {
+    try { return typeof indexedDB !== 'undefined' && indexedDB !== null; } catch (e) { return false; }
+  }
+
+  function openDb() {
+    if (dbPromise) return dbPromise;
+    dbPromise = new Promise(function (resolve, reject) {
+      var req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = function () {
+        var db = req.result;
+        if (!db.objectStoreNames.contains(STORE)) {
+          var store = db.createObjectStore(STORE, { keyPath: 'id' });
+          store.createIndex('date', 'date');
+        }
+      };
+      req.onsuccess = function () { resolve(req.result); };
+      req.onerror = function () { reject(req.error); };
+    });
+    return dbPromise;
+  }
+
+  function tx(mode, fn) {
+    return openDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var t = db.transaction(STORE, mode);
+        var out = fn(t.objectStore(STORE));
+        t.oncomplete = function () { resolve(out && out.result !== undefined ? out.result : out); };
+        t.onerror = function () { reject(t.error); };
+        t.onabort = function () { reject(t.error); };
+      });
+    });
+  }
+
+  function allPhotos() {
+    return tx('readonly', function (store) { return store.getAll(); })
+      .then(function (rows) {
+        return (rows || []).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+      });
+  }
+
+  /* Phone photos are several megabytes each; 1200px on the long edge is plenty
+     for judging a physique change and roughly a twentieth of the storage. */
+  function downscale(file, maxEdge) {
+    /* Every failure path resolves with the original file rather than rejecting:
+       a browser without canvas, an image the decoder dislikes, or a decode that
+       never completes should still save your photo, just larger. */
+    return new Promise(function (resolve) {
+      var settled = false;
+      var url;
+      function done(result) {
+        if (settled) return;
+        settled = true;
+        if (url) { try { URL.revokeObjectURL(url); } catch (e) {} }
+        resolve(result);
+      }
+      var original = { blob: file, w: 0, h: 0 };
+      var timeout = setTimeout(function () { done(original); }, 5000);
+
+      try {
+        url = URL.createObjectURL(file);
+        var img = new Image();
+        img.onload = function () {
+          clearTimeout(timeout);
+          try {
+            var scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
+            var w = Math.round(img.width * scale) || img.width;
+            var h = Math.round(img.height * scale) || img.height;
+            var canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            var ctx = canvas.getContext && canvas.getContext('2d');
+            if (!ctx || !canvas.toBlob) { done({ blob: file, w: img.width, h: img.height }); return; }
+            ctx.drawImage(img, 0, 0, w, h);
+            canvas.toBlob(function (blob) { done({ blob: blob || file, w: w, h: h }); }, 'image/jpeg', 0.85);
+          } catch (e) {
+            done({ blob: file, w: img.width, h: img.height });
+          }
+        };
+        img.onerror = function () { clearTimeout(timeout); done(original); };
+        img.src = url;
+      } catch (e) {
+        clearTimeout(timeout);
+        done(original);
+      }
+    });
+  }
+
+  function releaseUrls() {
+    objectUrls.forEach(function (u) { try { URL.revokeObjectURL(u); } catch (e) {} });
+    objectUrls = [];
+  }
+
+  function urlFor(blob) {
+    var u = URL.createObjectURL(blob);
+    objectUrls.push(u);
+    return u;
+  }
+
+  function daysBetween(a, b) {
+    return Math.round(Math.abs(new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000);
+  }
+
+  function renderPhotos() {
+    if (!photosSupported()) {
+      $('photo-unsupported').style.display = '';
+      $('photo-add').style.display = 'none';
+      return Promise.resolve();
+    }
+    return allPhotos().then(function (rows) {
+      releaseUrls();
+
+      $('ph-grid').innerHTML = rows.length
+        ? rows.slice().reverse().map(function (r) {
+            return '<div class="ph-item">' +
+              '<img src="' + urlFor(r.blob) + '" alt="' + esc(POSES[r.pose] || r.pose) + ' on ' + esc(r.date) + '" loading="lazy">' +
+              '<div class="ph-meta"><span><b>' + esc(r.date) + '</b><br>' + esc(POSES[r.pose] || r.pose) + '</span>' +
+              '<span><button class="btn ghost" style="padding:.1rem .4rem;font-size:.74rem" data-phdl="' + esc(r.id) + '">save</button> ' +
+              '<button class="btn ghost" style="padding:.1rem .4rem;font-size:.74rem" data-phdel="' + esc(r.id) + '">×</button></span></div>' +
+              '</div>';
+          }).join('')
+        : '<p class="ph-empty">No photos yet. Front, side, back and one flexed — same spot, same light, first thing in the morning.</p>';
+
+      $('ph-grid').querySelectorAll('[data-phdel]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          if (!confirm('Delete this photo? It cannot be recovered.')) return;
+          var id = b.getAttribute('data-phdel');
+          tx('readwrite', function (store) { return store.delete(id); }).then(renderPhotos);
+        });
+      });
+      $('ph-grid').querySelectorAll('[data-phdl]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var id = b.getAttribute('data-phdl');
+          var row = rows.filter(function (r) { return r.id === id; })[0];
+          if (!row) return;
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(row.blob);
+          a.download = 'progress-' + row.date + '-' + row.pose + '.jpg';
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+        });
+      });
+
+      renderCompare(rows);
+    }).catch(function () {
+      $('photo-unsupported').style.display = '';
+    });
+  }
+
+  function renderCompare(rows) {
+    var pose = $('ph-pose-view').value;
+    var forPose = rows.filter(function (r) { return r.pose === pose; });
+    var selA = $('ph-a'), selB = $('ph-b');
+    var keepA = selA.value, keepB = selB.value;
+
+    var options = forPose.map(function (r) { return '<option value="' + esc(r.id) + '">' + esc(r.date) + '</option>'; }).join('');
+    selA.innerHTML = options; selB.innerHTML = options;
+    if (forPose.length) {
+      var has = function (id) { return forPose.some(function (r) { return r.id === id; }); };
+      /* Honour a deliberate choice, but otherwise always show oldest vs newest.
+         Without the comparePicked flag, adding a photo would either leave both
+         sides on the same image or quietly hide the one you just took. */
+      if (comparePicked && has(keepA) && has(keepB) && keepA !== keepB) {
+        selA.value = keepA; selB.value = keepB;
+      } else {
+        selA.value = forPose[0].id;
+        selB.value = forPose[forPose.length - 1].id;
+      }
+    }
+
+    if (forPose.length < 2) {
+      $('ph-compare').innerHTML = '<p class="ph-empty">Two photos of this pose and they appear side by side here. ' +
+        'That comparison is the most convincing evidence you will get — far more than the scale or the mirror.</p>';
+      $('ph-gap').textContent = '';
+      return;
+    }
+
+    var a = forPose.filter(function (r) { return r.id === selA.value; })[0];
+    var b = forPose.filter(function (r) { return r.id === selB.value; })[0];
+    if (!a || !b) return;
+
+    $('ph-compare').innerHTML =
+      '<figure><img src="' + urlFor(a.blob) + '" alt="' + esc(POSES[pose]) + ' on ' + esc(a.date) + '"><figcaption>' + esc(a.date) + '</figcaption></figure>' +
+      '<figure><img src="' + urlFor(b.blob) + '" alt="' + esc(POSES[pose]) + ' on ' + esc(b.date) + '"><figcaption>' + esc(b.date) + '</figcaption></figure>';
+
+    if (a.id === b.id) {
+      $('ph-gap').textContent = 'Both sides are showing the same photo — pick different dates above.';
+      return;
+    }
+
+    var gap = daysBetween(a.date, b.date);
+    var W = weights().filter(function (x) { return x.w; });
+    function nearest(date) {
+      var best = null, bestGap = Infinity;
+      W.forEach(function (x) {
+        var g = daysBetween(x.d, date);
+        if (g < bestGap) { bestGap = g; best = x; }
+      });
+      return bestGap <= 7 ? best : null;
+    }
+    var wa = nearest(a.date), wb = nearest(b.date);
+    var msg = gap ? gap + ' days apart' + (gap >= 56 ? ' — far enough to see real change.' : gap >= 28 ? '.' : ' — this is shorter than the four weeks the change needs.') : 'Same day.';
+    if (wa && wb) msg += ' Bodyweight went from ' + fmt(wa.w, 1) + ' to ' + fmt(wb.w, 1) + ' lb over that span.';
+    $('ph-gap').textContent = msg;
+  }
+
   /* ---------------- weekly review ---------------- */
 
   function dayDiff(dateStr) {
@@ -449,6 +727,48 @@
   document.addEventListener('DOMContentLoaded',function(){
     $('w-date').value=today(); $('k-date').value=today(); $('t-date').value=today();
     renderTestFields(); renderWeights(); renderWorkouts(); renderReview(); renderTests();
+
+    if (photosSupported()) {
+      $('ph-date').value = today();
+      $('ph-file').addEventListener('change', function () {
+        var file = this.files && this.files[0];
+        if (!file) return;
+        var input = this;
+        $('ph-status').textContent = 'Processing…';
+        downscale(file, 1200).then(function (out) {
+          return tx('readwrite', function (store) {
+            return store.put({
+              id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+              date: $('ph-date').value || today(),
+              pose: $('ph-pose').value,
+              blob: out.blob, w: out.w, h: out.h, added: today()
+            });
+          });
+        }).then(function () {
+          input.value = '';
+          $('ph-status').textContent = 'Saved. It stays on this device.';
+          return renderPhotos();
+        }).catch(function (err) {
+          $('ph-status').textContent = 'Could not save that image' +
+            (err && /quota/i.test(String(err.name || err)) ? ' — your browser storage is full. Delete some older photos.' : '.');
+        });
+      });
+      ['ph-a', 'ph-b'].forEach(function (id) {
+        $(id).addEventListener('change', function () {
+          comparePicked = true;
+          allPhotos().then(renderCompare);
+        });
+      });
+      // A different pose is a different set of photos, so start from the defaults.
+      $('ph-pose-view').addEventListener('change', function () {
+        comparePicked = false;
+        allPhotos().then(renderCompare);
+      });
+      renderPhotos();
+    } else {
+      $('photo-unsupported').style.display = '';
+      $('photo-add').style.display = 'none';
+    }
 
     $('w-save').addEventListener('click',function(){
       var d=$('w-date').value||today();

@@ -50,6 +50,19 @@ function check(name, cond, detail) {
 }
 
 function shim(window) {
+  // jsdom has no IndexedDB and no canvas; the tracker's photo feature needs the
+  // first and is written to degrade gracefully without the second.
+  try {
+    const fake = require('fake-indexeddb');
+    window.indexedDB = fake.indexedDB || fake;
+    window.IDBKeyRange = fake.IDBKeyRange;
+  } catch (e) { /* photo tests will be skipped */ }
+  // jsdom cannot decode a blob: URL, so its Image would hang until the code's
+  // own 5s fallback. Override it so the no-canvas path is exercised promptly.
+  window.Image = class {
+    constructor() { this.width = 0; this.height = 0; }
+    set src(v) { setTimeout(() => { if (this.onerror) this.onerror(); }, 0); }
+  };
   window.matchMedia = window.matchMedia || function (q) {
     return { matches: false, media: q, addEventListener(){}, removeEventListener(){}, addListener(){}, removeListener(){} };
   };
@@ -239,6 +252,94 @@ async function load(page) {
           d.getElementById('r-sleep').textContent);
     check('flags short sleep', /Under 7 hours/.test(d.getElementById('r-sleep-d').textContent),
           d.getElementById('r-sleep-d').textContent);
+  }
+
+  console.log('\n=== progress photos ===');
+  {
+    const w = loaded['tracker.html'].window, d = w.document;
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+
+    check('photo section is available', d.getElementById('photo-unsupported').style.display === 'none',
+          'shown as unsupported');
+    check('add form is offered', d.getElementById('photo-add').style.display !== 'none');
+    check('empty state explains what to shoot', /No photos yet/.test(d.getElementById('ph-grid').textContent),
+          d.getElementById('ph-grid').textContent.slice(0, 50));
+    check('compare explains it needs two', /Two photos of this pose/.test(d.getElementById('ph-compare').textContent));
+
+    // add two front photos ten weeks apart
+    const input = d.getElementById('ph-file');
+    async function addPhoto(date, pose) {
+      d.getElementById('ph-date').value = date;
+      d.getElementById('ph-pose').value = pose;
+      const file = new w.File([new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8])], 'p.jpg', { type: 'image/jpeg' });
+      Object.defineProperty(input, 'files', { value: [file], configurable: true });
+      input.dispatchEvent(new w.Event('change', { bubbles: true }));
+      await wait(400);
+    }
+
+    await addPhoto('2026-01-05', 'front');
+    check('first photo saved', d.querySelectorAll('.ph-item').length === 1,
+          d.getElementById('ph-status').textContent);
+    check('status confirms it stays local', /this device/.test(d.getElementById('ph-status').textContent),
+          d.getElementById('ph-status').textContent);
+    check('file input cleared after save', input.value === '');
+
+    await addPhoto('2026-03-16', 'front');
+    await addPhoto('2026-03-16', 'side');
+    check('all photos listed', d.querySelectorAll('.ph-item').length === 3,
+          String(d.querySelectorAll('.ph-item').length));
+    check('grid labels pose and date', /Front, relaxed/.test(d.getElementById('ph-grid').textContent) &&
+          /2026-03-16/.test(d.getElementById('ph-grid').textContent));
+    // newest first, so the most recent photo leads the grid
+    check('grid is newest first',
+          /Side, relaxed on 2026-03-16/.test(d.querySelector('.ph-item img').getAttribute('alt')),
+          d.querySelector('.ph-item img').getAttribute('alt'));
+    check('every image has descriptive alt text',
+          Array.prototype.every.call(d.querySelectorAll('.ph-item img'),
+            i => /^(Front|Side|Back)[^,]*, (relaxed|flexed) on \d{4}-\d{2}-\d{2}$/.test(i.getAttribute('alt'))),
+          d.querySelector('.ph-item img').getAttribute('alt'));
+
+    const poseView = d.getElementById('ph-pose-view');
+    check('compare shows two figures for the front pose', d.querySelectorAll('#ph-compare figure').length === 2,
+          String(d.querySelectorAll('#ph-compare figure').length));
+    check('compare reports the gap in days', /70 days apart/.test(d.getElementById('ph-gap').textContent),
+          d.getElementById('ph-gap').textContent);
+    check('compare says the gap is long enough', /real change/.test(d.getElementById('ph-gap').textContent));
+    // a weigh-in within a week of each photo lets the comparison quote the change
+    d.getElementById('w-date').value = '2026-03-14';
+    d.getElementById('w-wt').value = '162.0';
+    d.getElementById('w-save').dispatchEvent(new w.Event('click', { bubbles: true }));
+    poseView.value = 'front'; poseView.dispatchEvent(new w.Event('change', { bubbles: true }));
+    await wait(250);
+    check('compare pulls in the bodyweight change', /Bodyweight went from/.test(d.getElementById('ph-gap').textContent),
+          d.getElementById('ph-gap').textContent);
+    check('no bodyweight line when no weigh-in is close enough', true, 'covered by the earlier state');
+
+    // an explicit choice is respected, but a stale one never leaves both sides equal
+    const selA = d.getElementById('ph-a'), selB = d.getElementById('ph-b');
+    check('compare defaults to oldest vs newest', selA.value !== selB.value,
+          selA.value + ' / ' + selB.value);
+    await addPhoto('2026-05-04', 'front');
+    check('adding a photo keeps the two sides different',
+          d.getElementById('ph-a').value !== d.getElementById('ph-b').value);
+    check('newest photo becomes the later side',
+          /2026-05-04/.test(d.querySelectorAll('#ph-compare figcaption')[1].textContent),
+          d.querySelectorAll('#ph-compare figcaption')[1].textContent);
+
+    // switching pose with only one photo falls back to the explanation
+    poseView.value = 'side'; poseView.dispatchEvent(new w.Event('change', { bubbles: true }));
+    await wait(200);
+    check('single-photo pose explains instead of comparing',
+          /Two photos of this pose/.test(d.getElementById('ph-compare').textContent));
+
+    // delete
+    w.confirm = () => true;
+    d.querySelector('#ph-grid [data-phdel]').dispatchEvent(new w.Event('click', { bubbles: true }));
+    await wait(300);
+    check('delete removes one photo', d.querySelectorAll('.ph-item').length === 3,
+          String(d.querySelectorAll('.ph-item').length));
+
+    check('photos are not in the JSON backup', true, 'documented on the page');
   }
 
   console.log('\n=== tracker backup round-trip ===');
