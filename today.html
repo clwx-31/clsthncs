@@ -89,6 +89,10 @@
   .howto-body .cue b { color: var(--good); }
   .howto-body .avoid { color: var(--text-muted); }
   .howto-body .avoid b { color: var(--stop); }
+  .howto-body .equip { color: var(--text-muted); }
+  .howto-body .equip b, .howto-body .adj b { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; margin-right: .35rem; color: var(--text); }
+  .howto-body .equip i { font-style: normal; }
+  .howto-body .adj { color: var(--text-muted); }
   .rir-box { display: inline-flex; align-items: center; gap: .3rem; margin-left: .5rem; }
   .rir-box label { font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); margin: 0; font-weight: 700; }
   .rir-box input { width: 3.2rem; text-align: center; padding: .4rem .3rem; }
@@ -195,6 +199,7 @@
 </div>
 
 <script src="assets/program-data.js"></script>
+<script src="assets/exercise-panel.js"></script>
 <script>
 (function () {
   var C = window.CAL;
@@ -370,7 +375,11 @@
 
       return '<div class="ex-row' + (it.skill ? ' skill-row' : '') + (done ? ' done' : '') + '">' +
         '<div class="ex-head">' +
-          '<span class="ex-name">' + (it.skill ? '<span class="badge" style="background:var(--accent-soft);color:var(--accent)">Skill</span> ' : '') + esc(name) + '</span>' +
+          '<span class="ex-name">' + (it.skill ? '<span class="badge" style="background:var(--accent-soft);color:var(--accent)">Skill</span> ' : '') +
+            '<a class="ex-link" href="' + esc((ladder && ladder.page) || (C.FIXED[it.k] && C.FIXED[it.k].page) || 'exercises.html') + '"' +
+            ' data-ex="' + esc(it.k) + '" data-sets="' + sets + '" data-min="' + it.min + '"' +
+            ' data-max="' + it.max + '" data-rest="' + it.rest + '" data-role="' + esc(it.role || 'secondary') + '">' +
+            esc(name) + '</a></span>' +
           '<span class="ex-meta"><b>' + sets + ' × ' + (it.min === it.max ? it.min : it.min + '–' + it.max) + '</b> ' + esc(unit) +
             ' · rest <b>' + (it.rest >= 60 ? (it.rest / 60) + ' min' : it.rest + ' s') + '</b></span>' +
           (prev ? '<span class="ex-prev">last time: ' + prev.sets.join(' / ') + ' <span style="opacity:.7">(' + esc(prev.d) + ')</span></span>' : '<span class="ex-prev">no history yet</span>') +
@@ -378,9 +387,13 @@
         (it.note ? '<p style="font-size:.85rem;color:var(--text-muted);margin:0 0 .5rem">' + esc(it.note) + '</p>' : '') +
         (g ? '<details class="howto"><summary>How to do it</summary>' +
              '<div class="howto-body">' +
+             (g.equip ? '<p class="equip"><b>Need</b> ' + esc(g.equip) +
+                (g.sub ? ' <i>' + esc(g.sub) + '</i>' : '') + '</p>' : '') +
              '<p>' + esc(g.how) + '</p>' +
              '<p class="cue"><b>Cue</b> ' + esc(g.cue) + '</p>' +
              '<p class="avoid"><b>Avoid</b> ' + esc(g.avoid) + '</p>' +
+             (g.easier ? '<p class="adj"><b>Too hard</b> ' + esc(g.easier) + '</p>' : '') +
+             (g.harder ? '<p class="adj"><b>Too easy</b> ' + esc(g.harder) + '</p>' : '') +
              '</div></details>' : '') +
         '<div class="set-inputs">' + inputs + '<span class="u">' + esc(unit) + '</span>' +
           (it.skill ? '' :
