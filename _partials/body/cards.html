@@ -16,6 +16,7 @@
   .cal-table tr.deload { background: var(--warn-soft); }
   .cal-table .note-cell { min-width: 8rem; }
   .card-sheet .cue { display: block; font-size: .74rem; color: var(--text-muted); line-height: 1.35; margin-top: .15rem; max-width: 34rem; }
+  .card-sheet .cue.equip { font-style: italic; opacity: .85; }
 
   /* Same control as the session runner. Duplicated rather than added to
      style.css so page styling stays out of Codex's way; fold both into
@@ -118,6 +119,7 @@
 <div class="table-wrap"><table class="cal-table" id="calendar"></table></div>
 
 <script src="assets/program-data.js"></script>
+<script src="assets/exercise-panel.js"></script>
 <script>
 (function () {
   var C = window.CAL;
@@ -142,10 +144,16 @@
       var sets = C.setsForWeek(it.sets, midWeek);
       var range = it.min === it.max ? String(it.min) : it.min + '–' + it.max;
       var g = C.guide(it.k, rungs);
+      var href = (C.LADDERS[it.k] && C.LADDERS[it.k].page) ||
+                 (C.FIXED[it.k] && C.FIXED[it.k].page) || 'exercises.html';
       return '<tr>' +
         '<td>' + (it.skill ? '<span style="color:var(--accent);font-weight:700">skill</span> ' : '') +
-          esc(C.label(it.k, rungs)) +
-          (g ? '<span class="cue">' + esc(g.cue) + '</span>' : '') + '</td>' +
+          '<a class="ex-link" href="' + esc(href) + '" data-ex="' + esc(it.k) + '"' +
+            ' data-sets="' + sets + '" data-min="' + it.min + '" data-max="' + it.max + '"' +
+            ' data-rest="' + it.rest + '" data-role="' + esc(it.role || 'secondary') + '">' +
+            esc(C.label(it.k, rungs)) + '</a>' +
+          (g ? '<span class="cue">' + esc(g.cue) + '</span>' : '') +
+          (g && g.equip ? '<span class="cue equip">Need: ' + esc(g.equip) + '</span>' : '') + '</td>' +
         '<td class="num">' + sets + ' × ' + range + '</td>' +
         '<td class="num">' + (it.rest >= 60 ? (it.rest / 60) + ' min' : it.rest + ' s') + '</td>' +
         '<td class="num">' + boxes(sets) + '</td>' +
