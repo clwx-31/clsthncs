@@ -31,8 +31,13 @@ function renderLadder(key) {
     '<span class="gate">Gate: <b>' + esc(r.gate) + '</b></span>' +
     '<span class="cue-line"><b>Cue</b> ' + esc(r.cue) + '</span>' +
     '<details class="rung-how"><summary>Setup &amp; execution</summary>' +
+    '<p class="equip"><b>Equipment</b> ' + esc(r.equip) +
+      (r.sub ? ' <span class="sub"><b>Don\u2019t have it?</b> ' + esc(r.sub) + '</span>' : '') + '</p>' +
     '<p>' + esc(r.how) + '</p>' +
     '<p class="avoid"><b>Most common error</b> ' + esc(r.avoid) + '</p>' +
+    (r.first ? '<p class="firsttime"><b>First time</b> ' + esc(r.first) + '</p>' : '') +
+    '<p class="adjust"><b>Too hard?</b> ' + esc(r.easier) + '</p>' +
+    '<p class="adjust"><b>Too easy?</b> ' + esc(r.harder) + '</p>' +
     '</details>' +
     '</li>'
   )).join('\n');
