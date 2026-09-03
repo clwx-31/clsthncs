@@ -460,7 +460,11 @@ async function load(page) {
     check('session A suggested first', d.getElementById('s-sess').textContent.trim() === 'A', d.getElementById('s-sess').textContent);
 
     const rows = d.querySelectorAll('.ex-row');
-    check('session A has 7 exercises', rows.length === 7, String(rows.length));
+    // Counted from the data, so tuning the program's volume doesn't break the
+    // test — only a runner that drops or invents rows does.
+    const expectA = w.CAL.phaseForWeek(1).sessions.A.items.length;
+    check('session A renders every programmed exercise', rows.length === expectA,
+          rows.length + ' of ' + expectA);
     check('skill row flagged', d.querySelectorAll('.ex-row.skill-row').length === 1);
     // week 1 ramps: a base-4 exercise should show 2 sets
     const pushRow = [...rows].find(r => /push-up/i.test(r.querySelector('.ex-name').textContent));
@@ -515,8 +519,10 @@ async function load(page) {
     // manual session pick
     click(d.querySelector('[data-pick="C"]'));
     check('manual pick switches session', d.getElementById('s-sess').textContent.trim() === 'C');
-    check('session C has 8 exercises', d.querySelectorAll('.ex-row').length === 8,
-          String(d.querySelectorAll('.ex-row').length));
+    const expectC = w.CAL.phaseForWeek(1).sessions.C.items.length;
+    check('session C renders every programmed exercise',
+          d.querySelectorAll('.ex-row').length === expectC,
+          d.querySelectorAll('.ex-row').length + ' of ' + expectC);
 
     // deload week
     const wk = d.getElementById('p-week'); wk.value = '6';
@@ -692,14 +698,17 @@ async function load(page) {
     Object.keys(CAL.LADDERS).forEach(k => {
       CAL.LADDERS[k].rungs.forEach((r, i) => {
         rungCount++;
-        ['n', 'gate', 'how', 'cue', 'avoid'].forEach(f => { if (!r[f]) gaps.push(k + '[' + i + '].' + f); });
+        ['n', 'gate', 'equip', 'how', 'cue', 'avoid', 'easier', 'harder', 'first']
+          .forEach(f => { if (!r[f]) gaps.push(k + '[' + i + '].' + f); });
         if ((r.how || '').length < 80) gaps.push(k + '[' + i + '].how too short');
       });
     });
     Object.keys(CAL.FIXED).forEach(k => {
-      ['n', 'unit', 'how', 'cue', 'avoid'].forEach(f => { if (!CAL.FIXED[k][f]) gaps.push('FIXED.' + k + '.' + f); });
+      ['n', 'unit', 'page', 'equip', 'how', 'cue', 'avoid', 'easier', 'harder', 'first']
+        .forEach(f => { if (!CAL.FIXED[k][f]) gaps.push('FIXED.' + k + '.' + f); });
     });
-    check('every rung has name, gate, how, cue and avoid', gaps.length === 0, gaps.slice(0, 4).join(', '));
+    check('every rung is complete: how, cue, avoid, equipment, both adjustments, first-time',
+          gaps.length === 0, gaps.slice(0, 4).join(', '));
     check('76 rungs across 11 ladders', rungCount === 76 && Object.keys(CAL.LADDERS).length === 11,
           rungCount + ' rungs / ' + Object.keys(CAL.LADDERS).length + ' ladders');
 
@@ -756,6 +765,209 @@ async function load(page) {
       check('search index contains the instructions',
             all.includes(CAL.LADDERS.squat.rungs[3].cue.slice(0, 40)),
             'looking for: ' + CAL.LADDERS.squat.rungs[3].cue.slice(0, 40));
+    }
+  }
+
+  console.log('\n=== program: volume, equipment, and the detail panel ===');
+  {
+    const path = require('path');
+    global.window = global.window || {};
+    delete require.cache[require.resolve(path.join(ROOT, 'assets/program-data.js'))];
+    require(path.join(ROOT, 'assets/program-data.js'));
+    const CAL = global.window.CAL;
+
+    /* Weekly sets per movement pattern, against the published beginner range.
+       The 2026 ACSM position stand puts hypertrophy at about 10 sets per muscle
+       per week and beginner guidance at 6-10; the Onramp is a beginner's first
+       month, so it is held to the lower band. A program that quietly creeps
+       back up to 30-set sessions is the specific regression this guards. */
+    function weekly(phase, week) {
+      const t = {};
+      CAL.ORDER.forEach(l => phase.sessions[l].items.forEach(it => {
+        t[it.k] = (t[it.k] || 0) + CAL.setsForWeek(it.sets, week);
+      }));
+      return t;
+    }
+    const onramp = weekly(CAL.phaseForWeek(3), 3);
+    const overOnramp = Object.keys(onramp).filter(k => onramp[k] > 10);
+    check('Onramp keeps every pattern at 10 weekly sets or under',
+          overOnramp.length === 0,
+          overOnramp.map(k => k + '=' + onramp[k]).join(', '));
+
+    const build = weekly(CAL.phaseForWeek(13), 13);
+    const overBuild = Object.keys(build).filter(k => build[k] > 14);
+    check('Build keeps every pattern at 14 weekly sets or under',
+          overBuild.length === 0, overBuild.map(k => k + '=' + build[k]).join(', '));
+
+    /* Session length. Roughly four seconds per rep, holds at their own length,
+       plus the programmed rest, plus eight minutes of warm-up and two of
+       logging. The page promises 40-60 minutes and that promise should hold. */
+    function minutes(items, week) {
+      let t = 0;
+      items.forEach(it => {
+        const sets = CAL.setsForWeek(it.sets, week);
+        const perSet = /sec/.test(CAL.unit(it.k)) ? it.max : it.max * 4;
+        t += sets * perSet + (sets - 1) * it.rest;
+      });
+      return Math.round(t / 60) + 10;
+    }
+    const longest = Math.max(...CAL.PHASES.map(p =>
+      Math.max(...CAL.ORDER.map(l => minutes(p.sessions[l].items, p.to)))));
+    check('no session exceeds the 60 minutes the page promises', longest <= 60,
+          longest + ' min');
+
+    /* The volume ramp has to actually ramp, including for a 3-set base. */
+    check('week 1 is lighter than week 2', CAL.setsForWeek(3, 1) < CAL.setsForWeek(3, 2),
+          CAL.setsForWeek(3, 1) + ' then ' + CAL.setsForWeek(3, 2));
+    check('week 3 runs the full prescription', CAL.setsForWeek(3, 3) === 3);
+    check('deload halves the sets', CAL.setsForWeek(4, 6) === 2, String(CAL.setsForWeek(4, 6)));
+
+    /* The Onramp must not reach above the beginner end of any ladder. This is
+       the bug that started all of this: the hand-written table prescribed
+       Bulgarian split squats and Nordic curl negatives in week 1. */
+    const startRungs = CAL.defaultRungs();
+    const tooAdvanced = [];
+    CAL.ORDER.forEach(l => CAL.phaseForWeek(1).sessions[l].items.forEach(it => {
+      const pos = CAL.rungIndex(it.k, startRungs);
+      if (pos && pos.index > 2) tooAdvanced.push(it.k + ' at rung ' + (pos.index + 1));
+    }));
+    check('the Onramp starts everyone in the bottom three rungs',
+          tooAdvanced.length === 0, tooAdvanced.join(', '));
+
+    /* Every phase states its own equipment, and the Onramp's claim is honest. */
+    const noNeeds = CAL.PHASES.filter(p => !p.needs).map(p => p.name);
+    check('every phase declares what equipment it needs', noNeeds.length === 0, noNeeds.join(', '));
+    check('the Onramp no longer claims "floor only"',
+          !/floor only/i.test(CAL.PHASES[0].needs + CAL.PHASES[0].blurb));
+
+    /* The generated session tables on program.html. */
+    {
+      const d = loaded['program.html'].window.document;
+      const programmed = CAL.PHASES.reduce((n, p) =>
+        n + CAL.ORDER.reduce((m, l) => m + p.sessions[l].items.length, 0), 0);
+      const rows = d.querySelectorAll('tr.ex-row');
+      check('program page renders every programmed slot', rows.length === programmed,
+            rows.length + ' of ' + programmed);
+
+      const noTrigger = [...rows].filter(r => !r.querySelector('a.ex-link[data-ex]'));
+      check('every set and rep row is clickable', noTrigger.length === 0,
+            String(noTrigger.length) + ' rows without a trigger');
+
+      const incomplete = [...d.querySelectorAll('a.ex-link[data-ex]')].filter(a =>
+        !a.getAttribute('data-sets') || !a.getAttribute('data-rest') || !a.getAttribute('data-role'));
+      check('every trigger carries its prescription', incomplete.length === 0,
+            String(incomplete.length));
+
+      const badHref = [...d.querySelectorAll('a.ex-link[data-ex]')].filter(a =>
+        !/^exercises\.html#/.test(a.getAttribute('href')));
+      check('every trigger still works with JavaScript off', badHref.length === 0,
+            String(badHref.length) + ' without a library link');
+
+      /* The old drift, asserted directly: these movements are several rungs up
+         and must not appear as prescriptions in the four-week Onramp. */
+      const onrampText = d.body.textContent.split('Foundation')[0];
+      check('no Bulgarian split squat in the Onramp', !/Bulgarian/.test(onrampText));
+      check('no Nordic curl in the Onramp', !/Nordic/.test(onrampText));
+
+      check('the false "floor only" claim is gone', !/floor only/i.test(d.body.textContent));
+      check('each phase prints its equipment list',
+            (d.body.textContent.match(/What you need:/g) || []).length === 3,
+            String((d.body.textContent.match(/What you need:/g) || []).length));
+    }
+
+    /* why() composes an explanation from the actual prescription, so it cannot
+       contradict the numbers printed beside it. */
+    {
+      const it = CAL.phaseForWeek(1).sessions.A.items.find(x => x.role === 'main');
+      const w2 = CAL.why(it);
+      check('why() explains sets, reps, rest and effort',
+            !!(w2 && w2.sets && w2.reps && w2.rest && w2.effort));
+      check('why() quotes the real numbers',
+            w2.sets.includes(String(it.sets)) && w2.reps.includes(String(it.max)) &&
+            w2.rest.includes(it.rest >= 120 ? String(it.rest / 60) : String(it.rest)),
+            w2.rest);
+      const hold = CAL.PHASES[0].sessions.A.items.find(x => x.role === 'skill');
+      check('holds are explained in seconds, not reps', /second/.test(CAL.why(hold).reps));
+      check('skill work is never sent to failure', /never/i.test(CAL.why(hold).effort));
+    }
+
+    /* Rung-aware units: a box squat is not a per-leg exercise. */
+    check('box squat counts in reps', CAL.unit('squat', { squat: 0 }) === 'reps');
+    check('pistol squat counts per leg', /leg/.test(CAL.unit('squat', { squat: 6 })));
+    check('the squat ladder is flagged as mixed-unit', CAL.unitIsUniform('squat') === false);
+    check('a single-unit ladder is not', CAL.unitIsUniform('push') === true);
+
+    /* The panel itself, driven through a real click on the program page. */
+    {
+      const win = loaded['program.html'].window;
+      const d = win.document;
+      const trigger = d.querySelector('a.ex-link[data-ex="squat"]');
+      check('a squat row exists to click', !!trigger);
+      trigger.dispatchEvent(new win.MouseEvent('click', { bubbles: true, cancelable: true }));
+      const panel = d.querySelector('.xp-panel');
+      check('clicking a row opens the panel', !!panel && panel.hidden === false);
+
+      const txt = panel.textContent;
+      const g = CAL.guide('squat', CAL.defaultRungs());
+      check('panel names the rung you are on', panel.querySelector('#xp-title').textContent === g.n,
+            panel.querySelector('#xp-title').textContent);
+      check('panel gives the equipment', txt.includes(g.equip.slice(0, 30)));
+      /* Not every rung needs a substitute — a bodyweight squat needs nothing to
+         substitute for. Assert it on one that does. */
+      const sub = CAL.guide('hpull', CAL.defaultRungs());
+      check('a rung that needs equipment offers a free substitute', !!sub.sub, sub.n);
+      check('panel gives the execution', txt.includes(g.how.slice(0, 40)));
+      check('panel gives the cue', txt.includes(g.cue.slice(0, 30)));
+      check('panel gives the mistake to avoid', txt.includes(g.avoid.slice(0, 30)));
+      check('panel says what it feels like first time', txt.includes(g.first.slice(0, 30)));
+      check('panel says what to do if it is too hard', txt.includes(g.easier.slice(0, 30)));
+      check('panel says what earns the next rung', txt.includes(g.harder.slice(0, 30)));
+      check('panel explains why these numbers', /weekly budget|double progression/.test(txt));
+      check('panel breaks execution into steps', panel.querySelectorAll('.xp-steps li').length > 1,
+            String(panel.querySelectorAll('.xp-steps li').length));
+      check('panel is a labelled modal dialog',
+            panel.getAttribute('role') === 'dialog' &&
+            panel.getAttribute('aria-modal') === 'true' &&
+            panel.getAttribute('aria-labelledby') === 'xp-title');
+      check('panel links back to the full ladder',
+            !!panel.querySelector('.xp-more a[href^="exercises.html"]'));
+
+      d.dispatchEvent(new win.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      check('escape closes the panel', !panel.classList.contains('is-open'));
+
+      /* A second exercise, to prove the panel rebuilds rather than caching. */
+      const other = d.querySelector('a.ex-link[data-ex="hpull"]');
+      other.dispatchEvent(new win.MouseEvent('click', { bubbles: true, cancelable: true }));
+      check('panel rebuilds for a different exercise',
+            panel.querySelector('#xp-title').textContent ===
+              CAL.guide('hpull', CAL.defaultRungs()).n,
+            panel.querySelector('#xp-title').textContent);
+    }
+
+    /* Today's session gets the same treatment. */
+    {
+      const d = loaded['today.html'].window.document;
+      check("today's exercise names are panel triggers",
+            d.querySelectorAll('.ex-name a.ex-link[data-ex]').length > 0,
+            String(d.querySelectorAll('.ex-name a.ex-link[data-ex]').length));
+      check("today's how-to now includes equipment",
+            d.querySelectorAll('.howto-body .equip').length > 0);
+      check("today's how-to now includes both adjustments",
+            d.querySelectorAll('.howto-body .adj').length >= 2);
+    }
+
+    /* And the exercise library. */
+    {
+      const d = loaded['exercises.html'].window.document;
+      check('library lists equipment on every rung',
+            d.querySelectorAll('.rung-how .equip').length === 76,
+            String(d.querySelectorAll('.rung-how .equip').length));
+      check('library lists both adjustments on every rung',
+            d.querySelectorAll('.rung-how .adjust').length === 152,
+            String(d.querySelectorAll('.rung-how .adjust').length));
+      check('library carries the first-time note',
+            d.querySelectorAll('.rung-how .firsttime').length === 76,
+            String(d.querySelectorAll('.rung-how .firsttime').length));
     }
   }
 

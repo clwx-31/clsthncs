@@ -10,7 +10,7 @@ training three days a week starting with no equipment. All units are US customar
 | `index.html` | Start here: profile numbers, the six factors that determine results, the 12-month roadmap, week-1 checklist |
 | `fundamentals.html` | Progressive overload, the five levers, sets/reps/volume, RIR, tempo, rest, frequency, double progression, form, 12 beginner mistakes, glossary |
 | `exercises.html` | Progression ladders with rep gates for every pattern — push-up, dip, pike/handstand, pull-up, row, squat, hinge, calves, core, L-sit, front lever, muscle-up — plus warm-up prep and no-equipment substitutions |
-| `program.html` | The 24-week, 3-day/week program in three phases, with session tables, week-by-week calendar, deloads, cardio, and what to do when life interferes |
+| `program.html` | The 24-week, 3-day/week program in three phases. Session tables are generated from `assets/program-data.js` and every row opens the detail panel. Plus the week-by-week calendar, deloads, cardio, and what to do when life interferes |
 | `goals.html` | 12-test baseline protocol, measurement protocols, Navy body-fat calculator, strength standards by training age, 3/6/12-month targets, milestone checklist, "it's not working" diagnostic |
 | `nutrition.html` | Live TDEE/macro calculator, rate of gain, protein/carb/fat guidance, food tables with grams, a sample 2,800 kcal day, grocery list, appetite strategies, hydration, supplements, bulk vs cut |
 | `recovery.html` | Sleep protocol, rest days, DOMS vs injury, pain traffic light, tendon adaptation, the five common calisthenics injuries, mobility routine, stretching, deloads, overtraining |
@@ -42,8 +42,12 @@ build.sh                 rebuilds every page, the search index, sw.js, sitemap.x
 assets/style.css         all styling (design tokens at the top, light + dark)
 assets/site.js           theme, nav, checklists, "/" search shortcut, SW registration
 assets/program-data.js   the 24-week program and all eleven ladders, as data —
-                         every rung carries how / cue / avoid
+                         every rung carries equipment, how, cue, avoid, both
+                         adjustment signals and a first-time note
 _partials/mkladders.js   regenerates the ladders on exercises.html from that data
+_partials/mksessions.js  regenerates the session tables on program.html from the
+                         same data, with the click targets the panel reads
+assets/exercise-panel.js the slide-over detail panel behind every set and rep
 assets/food-data.js      42 foods with full macros, feeding the tables and the
                          day builder on nutrition.html
 _partials/mkfoods.js     regenerates those tables from the data
@@ -65,13 +69,15 @@ npm run verify       # build + static checks + food arithmetic + behavior tests
 - **`_partials/check.py`** — internal links, anchors, asset paths, tag balance,
   skip-link targets, and the service worker precache list. No dependencies.
 - **`_partials/test.js`** — serves the repo on an ephemeral port, loads every
-  page in jsdom, and asserts that nothing throws plus ~130 specific behaviors:
+  page in jsdom, and asserts that nothing throws plus ~255 specific behaviors:
   the nutrition calculator and body-fat estimator, the tracker (weights,
   rolling average, chart geometry, personal bests, weekly review, baseline-test
   deltas, deletion, backup round-trip), the session runner (week and phase
   derivation, volume ramp, deloads, RIR capture, session rotation, what gets
-  logged), the rung finder, the printable cards, and search. Run this after any
-  restyle: it catches markup changes that silently break the scripts.
+  logged), the rung finder, the printable cards, search, the program's weekly
+  volume and session length against the published beginner ranges, and the
+  exercise detail panel. Run this after any restyle: it catches markup changes
+  that silently break the scripts.
 
 After publishing, smoke-test what actually went out:
 
@@ -146,11 +152,25 @@ eleven ladders, 76 rungs, and seven accessories, each with
 
 - `n` — the name
 - `gate` — the performance that earns the next rung
+- `equip` — exactly what that rung needs
+- `sub` — what to use instead if you don't have it (omitted when it needs nothing)
 - `how` — setup and execution, in the order you do them
 - `cue` — the one thing that matters while you are doing it
 - `avoid` — the mistake people actually make on that specific rung
+- `easier` — the sign you should drop back, and what to drop back to
+- `harder` — the sign you're ready to move up
+- `first` — what the first session on this rung actually feels like
+- `unit` — only when the rung differs from its ladder (a box squat counts in
+  reps, a pistol squat per leg)
 
-Three surfaces consume it, so they cannot drift apart:
+The program itself carries the rest. Each prescription slot has a `role`
+(`skill` / `main` / `secondary` / `accessory`) that `CAL.why()` composes with
+the slot's real sets, reps and rest into the "why these numbers" explanation —
+so the rationale cannot drift from the numbers printed beside it. Each phase
+carries a `needs` string stating its equipment, which is what keeps the page
+honest about when you actually have to buy something.
+
+Four surfaces consume it, so they cannot drift apart:
 
 - **`exercises.html`** — `_partials/mkladders.js` regenerates the ladders into
   the page between `<!-- LADDER:key -->` markers, as *static* HTML so it works
@@ -159,7 +179,30 @@ Three surfaces consume it, so they cannot drift apart:
   muscle-up ladders have no data entry and are left hand-written.
 - **`today.html`** — a "How to do it" disclosure on each exercise, showing the
   instructions for the rung you are actually on.
-- **`cards.html`** — the one-line cue, printed under each exercise name.
+- **`cards.html`** — the one-line cue and the equipment line, printed under
+  each exercise name.
+- **`program.html`** — `_partials/mksessions.js` regenerates the three phase
+  session tables between `<!-- SESSIONS:n -->` markers. This used to be
+  hand-written HTML and had drifted badly from the data: the "floor only"
+  Onramp was prescribing Bulgarian split squats and Nordic curl negatives,
+  both several rungs above where a beginner starts. Generating it makes that
+  class of drift impossible.
+
+## The exercise detail panel
+
+`assets/exercise-panel.js` is the answer to "what does this actually mean".
+Every set, rep and exercise on the program page, today's session and the
+printable cards is an `<a>` carrying `data-ex` plus the prescription. Without
+JavaScript it navigates to that movement's ladder in the exercise library.
+With JavaScript, the panel intercepts the click and slides in the full brief
+for the rung you are actually on: equipment and its free substitute, the
+execution as numbered steps, the cue, the mistake to avoid, what the first
+session feels like, why this many sets and reps and this much rest, what to do
+if it is too hard or too easy, and what earns the next rung.
+
+Add it to a page with `assets/program-data.js` followed by
+`assets/exercise-panel.js`; any element with `data-ex="<ladder key>"` becomes
+a trigger.
 
 Adding a rung means adding one object to the data and rerunning `./build.sh`.
 
