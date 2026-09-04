@@ -37,6 +37,13 @@ const ALT = {
   'build-legs': 'Man holding the bottom position of a controlled unassisted pistol squat'
 };
 
+/* Where the photography shows a rung above where that phase starts you, say so.
+   The alternative is a beginner in week 1 seeing a movement they will not touch
+   for a month and assuming they are already behind. */
+const CAPTION_NOTE = {
+  'onramp-legs': 'Pictured: the Bulgarian split squat, two rungs up this ladder — where you are heading, not where you start.'
+};
+
 /* The warm-up is the same shape every session: raise your temperature, then
    prepare the joints the session is about to load. It is not in the program
    data because it is not progressed — it links to the prep section instead. */
@@ -149,7 +156,9 @@ function sessionCard(phase, slot) {
   return `<div class="card workout-card">
 <figure class="workout-media">
   <img src="assets/images/workout-${slug}.webp" width="1280" height="800" loading="lazy" decoding="async" alt="${esc(ALT[slug])}">
-  <figcaption>${esc(phase.name)} / Session ${slot}</figcaption>
+  <figcaption>${esc(phase.name)} / Session ${slot}${
+    CAPTION_NOTE[slug] ? `<span class="fig-note">${esc(CAPTION_NOTE[slug])}</span>` : ''
+  }</figcaption>
 </figure>
 <h3>Session ${slot} — ${esc(session.title)}</h3>
 <p class="session-meta">${working} sets total &middot; every row below is clickable for the full how-to</p>

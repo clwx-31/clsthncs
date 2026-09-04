@@ -982,3 +982,15 @@ tr.ex-row:hover { background: var(--bg-sunken); }
 }
 .rung-how .equip .sub { display: block; margin-top: .2rem; }
 .rung-how .firsttime { border-left: 2px solid var(--warn); padding-left: .6rem; }
+
+/* A figcaption aside for when the photography shows a rung above the phase. */
+.workout-media .fig-note {
+  display: block;
+  margin-top: .2rem;
+  font-size: .72rem;
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 400;
+  color: var(--text-faint);
+  max-width: 32rem;
+}
